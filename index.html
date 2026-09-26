@@ -1,1103 +1,1016 @@
-<title>우박 실험실</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>우박 탐구실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
-  :root{
-    --sky-1:#DDF0FC; --sky-2:#F6FBFF;
-    --ink:#13324B; --ink-soft:#41637D;
-    --panel:#FFFFFF; --line:#BFDCEE; --line-soft:#D8EAF6;
-    --up-red:#D9432B; --up-red-soft:#FBE3DE;
-    --down-blue:#2C66C9; --down-blue-soft:#DEE9FB;
-    --ice:#8FCBE9; --ice-deep:#1B6FA8;
-    --grass:#6FAE52; --gold:#E19B00;
-    --ok:#2E8B57; --danger:#C6362B;
-    --radius:14px;
-    --font-body:"IBM Plex Sans KR",-apple-system,"Malgun Gothic",sans-serif;
-    --font-disp:"Jua","IBM Plex Sans KR","Malgun Gothic",sans-serif;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; background:linear-gradient(180deg,var(--sky-1),var(--sky-2) 60%);
-    min-height:100vh; color:var(--ink);
-    font-family:var(--font-body); font-size:17px; line-height:1.55;
-  }
-  button{font-family:inherit; cursor:pointer}
-  button:focus-visible,input:focus-visible{outline:3px solid var(--ice-deep); outline-offset:2px}
+/* ===== 디자인 토큰 ===== */
+:root{
+  --ink:#24303A; --ink-2:#4A5763; --paper:#FFFDF8; --ground:#E6EEF3; --sky:#BFE3F5;
+  --accent:#E8553E; --accent-2:#C7432E; --ok:#3FA36B; --warn:#F2B233; --bad:#D9483B;
+  --tab1:#5B9BD5; --tab2:#E0A93B; --tab3:#E8553E; --tab4:#8C6B4F; --tab5:#6AAE78;
+  --display:'Jua','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --body:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+button{font-family:var(--display);cursor:pointer;border:none}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{cursor:default;opacity:.45}
 
-  header{
-    display:flex; align-items:center; gap:20px; flex-wrap:wrap;
-    padding:14px 22px 10px; max-width:1340px; margin:0 auto;
-  }
-  .brand h1{font-family:var(--font-disp); font-weight:400; font-size:30px; margin:0; letter-spacing:.5px}
-  .brand p{margin:0; color:var(--ink-soft); font-size:14.5px}
-  .tabs{display:flex; gap:8px; margin-left:auto}
-  .tab{
-    font-family:var(--font-disp); font-size:19px; letter-spacing:.5px;
-    padding:10px 22px; border-radius:999px; border:2px solid var(--line);
-    background:var(--panel); color:var(--ink-soft);
-  }
-  .tab.on{background:var(--ink); border-color:var(--ink); color:#fff}
-  #soundBtn{
-    border:2px solid var(--line); background:var(--panel); color:var(--ink);
-    border-radius:999px; padding:9px 16px; font-size:15.5px; font-weight:500;
-  }
-  #soundBtn[data-on="false"]{color:var(--ink-soft); background:var(--line-soft)}
+/* 상단 제목 */
+.top{display:flex;align-items:flex-end;max-width:1240px;margin:0 auto;padding:8px 16px 0;width:100%}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0;white-space:nowrap}
+.brand h1{font-family:var(--display);font-weight:400;font-size:clamp(19px,3.1vw,30px);margin:0;letter-spacing:-.5px}
+.brand .sub{font-size:clamp(11px,1.7vw,16px);color:var(--ink-2);border-left:2px solid rgba(36,48,58,.25);padding-left:10px;overflow:hidden;text-overflow:ellipsis}
 
-  main{
-    display:flex; gap:18px; align-items:stretch;
-    max-width:1340px; margin:0 auto; padding:4px 22px 26px;
-  }
-  .stage-wrap{
-    position:relative; flex:1 1 640px; min-width:0;
-    border:2px solid var(--line); border-radius:var(--radius);
-    background:#CFE9F8; overflow:hidden;
-  }
-  canvas#stage{display:block; width:100%; height:auto}
+/* 폴더 모양 탭 */
+.tabs{display:flex;gap:6px;max-width:1240px;margin:6px auto 0;padding:0 36px 0 16px;overflow-x:auto;scrollbar-width:none;width:100%}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1 0 auto;min-width:150px;padding:10px 14px 12px;border-radius:14px 14px 0 0;background:#fff;color:var(--ink-2);font-size:18px;border:3px solid var(--ink);border-bottom:none;position:relative;top:3px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tab .num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:14px;flex:0 0 auto}
+.tab .short{display:none}
+.tab.active{color:#fff;top:0;padding-bottom:15px}
+.tab.active[data-tab="1"]{background:var(--tab1)}
+.tab.active[data-tab="2"]{background:var(--tab2)}
+.tab.active[data-tab="3"]{background:var(--tab3)}
+.tab.active .num{background:#fff;color:var(--ink)}
 
-  aside.panel{
-    flex:0 0 372px; display:flex; flex-direction:column;
-    background:var(--panel); border:2px solid var(--line); border-radius:var(--radius);
-    padding:20px 22px;
-  }
+/* 본문 패널 */
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px 6px;width:100%;flex:1 0 auto;display:flex;flex-direction:column}
+.panel{display:none;background:var(--paper);border:3px solid var(--ink);border-radius:0 18px 18px 18px;padding:12px;box-shadow:0 8px 0 rgba(36,48,58,.12)}
+.panel.active{display:block;flex:1 0 auto}
 
-  /* ---------- 시연 모드 패널 ---------- */
-  .step-head{display:flex; align-items:center; justify-content:space-between}
-  .step-eyebrow{
-    font-family:var(--font-disp); font-size:16px; color:var(--ice-deep); letter-spacing:1px;
-  }
-  .dots{display:flex; gap:7px}
-  .dots i{width:11px; height:11px; border-radius:50%; background:var(--line)}
-  .dots i.on{background:var(--ice-deep)}
-  #stepTitle{font-family:var(--font-disp); font-weight:400; font-size:26px; margin:10px 0 6px; text-wrap:balance}
-  #stepDesc{margin:0 0 14px; font-size:17.5px; min-height:6.2em}
-  .progress{height:8px; border-radius:4px; background:var(--line-soft); overflow:hidden}
-  .progress>div{height:100%; width:0%; background:var(--ice-deep); border-radius:4px}
-  .controls{display:flex; gap:8px; margin-top:16px}
-  .controls button{
-    flex:1; font-family:var(--font-disp); font-size:17px; padding:11px 4px;
-    border-radius:10px; border:2px solid var(--line); background:var(--panel); color:var(--ink);
-  }
-  .controls button:disabled{opacity:.4; cursor:default}
-  .controls #btnPlay{background:var(--ice-deep); border-color:var(--ice-deep); color:#fff}
-  .speed{display:flex; align-items:center; gap:8px; margin-top:12px; font-size:15px; color:var(--ink-soft)}
-  .speed button{
-    padding:5px 13px; border-radius:999px; border:2px solid var(--line);
-    background:var(--panel); font-size:14.5px; font-weight:500; color:var(--ink-soft);
-  }
-  .speed button.on{background:var(--ink); border-color:var(--ink); color:#fff}
-  .ref-card{
-    margin-top:auto; padding:14px 16px; border-radius:12px;
-    background:var(--line-soft); border:1.5px solid var(--line); font-size:15px;
-  }
-  .ref-card b{font-family:var(--font-disp); font-weight:400; color:var(--ice-deep); font-size:16px; letter-spacing:1px}
-  .ref-card ul{margin:6px 0 0; padding-left:19px}
-  .ref-card li{margin:3px 0}
+/* 16:9 무대 */
+.stage{position:relative;margin:0 auto;width:min(100%,max(340px,calc((100vh - 250px)*16/9)));width:min(100%,max(340px,calc((100dvh - 250px)*16/9)))}
+.split .stage{width:min(100%,max(340px,calc((100vh - 250px)*16/9)));width:min(100%,max(340px,calc((100dvh - 250px)*16/9)))}
+.stage-wrap{position:relative;width:100%;aspect-ratio:16/9;border:4px solid var(--ink);border-radius:14px;overflow:hidden;background:var(--sky)}
+.stage-wrap svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.badge{position:absolute;top:12px;left:12px;background:var(--ink);color:#fff;font-family:var(--display);font-size:clamp(14px,1.8vw,20px);padding:6px 14px;border-radius:999px;pointer-events:none}
+.caption{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(255,253,248,.94);border:3px solid var(--ink);border-radius:12px;padding:10px 16px;font-size:clamp(14px,1.9vw,21px);line-height:1.45;font-weight:500;word-break:keep-all;pointer-events:none}
+.split .caption{position:static;margin-top:8px;font-size:clamp(14px,1.5vw,19px);padding:8px 14px;min-height:3.9em;display:flex;align-items:center}
+.split .caption>span{display:block}
+.caption b{color:var(--accent-2)}
 
-  /* ---------- 체험 모드 패널 ---------- */
-  #gamePanel h2{font-family:var(--font-disp); font-weight:400; font-size:25px; margin:0 0 4px}
-  #gamePanel .hint{margin:0 0 14px; font-size:15px; color:var(--ink-soft)}
-  .slider-row{display:flex; align-items:baseline; justify-content:space-between; font-weight:700; font-size:17px}
-  .slider-row output{font-family:var(--font-disp); font-weight:400; font-size:26px; color:var(--up-red)}
-  input[type=range]{
-    width:100%; margin:8px 0 4px; accent-color:var(--up-red); height:34px;
-  }
-  .key-hint{font-size:13.5px; color:var(--ink-soft); margin:0 0 12px}
-  .gauges{display:flex; flex-direction:column; gap:9px; margin-bottom:14px}
-  .gauge label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:500; margin-bottom:3px}
-  .gauge label b{font-variant-numeric:tabular-nums}
-  .bar{height:16px; border-radius:8px; background:var(--line-soft); overflow:hidden}
-  .bar>div{height:100%; width:0%; border-radius:8px; transition:width .12s linear}
-  #gCur>div{background:var(--up-red)}
-  #gNeed>div{background:var(--ink)}
-  .stats{
-    display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 12px;
-  }
-  .stat{
-    background:var(--line-soft); border-radius:10px; padding:8px 12px 6px;
-  }
-  .stat dt{font-size:13px; color:var(--ink-soft)}
-  .stat dd{margin:0; font-family:var(--font-disp); font-size:22px; font-variant-numeric:tabular-nums}
-  .stat dd small{font-size:14px; color:var(--ink-soft)}
-  #stState.up{color:var(--up-red)} #stState.down{color:var(--down-blue)}
-  .best{
-    display:flex; justify-content:space-between; align-items:center;
-    font-size:15px; padding:9px 14px; border-radius:10px; margin-bottom:12px;
-    background:#FDF4DF; border:1.5px solid #EBD9A8; color:#7A5A00;
-  }
-  .best b{font-family:var(--font-disp); font-weight:400; font-size:19px}
-  #btnStart{
-    width:100%; font-family:var(--font-disp); font-size:21px; padding:13px;
-    border-radius:12px; border:none; background:var(--up-red); color:#fff; letter-spacing:1px;
-  }
-  #btnStart:disabled{background:var(--line); color:var(--ink-soft)}
+/* 눌리는 입체 버튼 */
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+.controls .spacer{flex:1}
+.btn{font-size:19px;padding:10px 20px;border-radius:12px;background:#fff;color:var(--ink);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s;user-select:none}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.ghost{background:transparent;box-shadow:none;border-color:transparent;color:var(--ink-2)}
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dot{width:36px;height:36px;border-radius:50%;border:3px solid var(--ink);background:#fff;color:var(--ink);font-size:17px;padding:0;display:grid;place-items:center}
+.dot.seen{background:#DCEAF7}
+.dot.on{background:var(--tab1);color:#fff}
 
-  /* ---------- 스테이지 오버레이 ---------- */
-  .overlay{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    background:rgba(19,50,75,.45); padding:20px;
-  }
-  .overlay-card{
-    background:var(--panel); border-radius:18px; padding:20px 28px; max-width:470px; width:100%;
-    text-align:center; border:3px solid var(--line); max-height:96%; overflow-y:auto;
-  }
-  .overlay-card h2{font-family:var(--font-disp); font-weight:400; font-size:26px; margin:0 0 6px; text-wrap:balance}
-  .overlay-card h2.fail{color:var(--danger)}
-  .overlay-card h2.win{color:var(--ice-deep)}
-  .overlay-card p{margin:4px 0; font-size:16.5px}
-  .overlay-card .big-num{font-family:var(--font-disp); font-size:30px; color:var(--ink); margin:2px 0}
-  .overlay-card canvas{margin:6px auto 2px; display:block}
-  .xsec-caption{font-family:var(--font-disp); font-size:19px; color:var(--ice-deep)}
-  .new-best{color:var(--gold); font-weight:700}
-  .overlay-card .row{display:flex; gap:10px; margin-top:12px}
-  .overlay-card .row button{
-    flex:1; font-family:var(--font-disp); font-size:18px; padding:12px; border-radius:11px;
-    border:2px solid var(--line); background:var(--panel); color:var(--ink);
-  }
-  .overlay-card .row button.primary{background:var(--up-red); border-color:var(--up-red); color:#fff}
-  #warnBanner{
-    position:absolute; top:14px; left:50%; transform:translateX(-50%);
-    background:var(--danger); color:#fff; font-family:var(--font-disp); font-size:20px;
-    padding:9px 22px; border-radius:999px; letter-spacing:.5px;
-    animation:flash .5s steps(2,end) infinite; white-space:nowrap;
-  }
-  @keyframes flash{50%{opacity:.45}}
-  @media (prefers-reduced-motion:reduce){ #warnBanner{animation:none} }
-  [hidden]{display:none!important}
+/* 무대 + 옆 패널 */
+.split{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;align-items:start}
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.side .controls{margin-top:2px}
+.side .controls .btn{flex:1}
 
-  @media (max-width:1020px){
-    main{flex-direction:column}
-    aside.panel{flex-basis:auto}
-    #stepDesc{min-height:0}
-    .ref-card{margin-top:14px}
-  }
+/* 카드 · 세그먼트 · 칩 · 안내 */
+.card{background:#fff;border:3px solid var(--ink);border-radius:14px;padding:10px}
+.card h3{font-family:var(--display);font-weight:400;font-size:18px;margin:0 0 6px}
+.seg{display:flex;border:3px solid var(--ink);border-radius:12px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;background:#F4F7FA;color:var(--ink);font-size:16px;line-height:1.2}
+.seg button small{display:block;font-family:var(--body);font-size:11px;opacity:.75;margin-top:2px}
+.seg button.sel{background:var(--tab2);color:#fff}
+#panel3 .seg button.sel{background:var(--tab3)}
+.seg button+button{border-left:3px solid var(--ink)}
+.chip{font-family:var(--display);font-size:13px;background:var(--ink);color:#fff;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.chip.good{background:var(--ok)} .chip.bad{background:var(--bad)} .chip.mid{background:var(--warn);color:var(--ink)}
+.note{margin-top:8px;padding:8px 12px;border-left:6px solid var(--tab1);background:#fff;border-radius:8px;font-size:14px;color:var(--ink-2);word-break:keep-all;line-height:1.5}
+.note b{color:var(--ink)}
+.note.done{background:#E4F3E8;border-left-color:var(--ok);color:var(--ink)}
+
+/* 우박 만들기 */
+.hold{width:100%;font-size:21px;padding:14px 10px;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hold.on{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);background:var(--accent-2)}
+.hint{margin:8px 0 0;font-size:13px;color:var(--ink-2);word-break:keep-all;line-height:1.45}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.stat{border:3px solid var(--ink);border-radius:10px;padding:4px 2px 3px;text-align:center;background:#F4F7FA}
+.stat b{display:block;font-family:var(--display);font-weight:400;font-size:24px;line-height:1.1}
+.stat span{font-size:11px;color:var(--ink-2)}
+.meter{margin-top:10px;display:grid;gap:6px}
+.meter .row{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:6px;font-size:13px;font-weight:700}
+.bar{position:relative;height:16px;border:3px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--bad)}
+.bar.down i{background:#3B7BC8}
+.bar s{position:absolute;top:0;bottom:0;width:3px;background:var(--ink);margin-left:-1px}
+#stage2 .stage-wrap{touch-action:none;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* 결과 팝업 */
+.pop{position:absolute;right:3%;top:9%;width:min(47%,400px);background:var(--paper);border:4px solid var(--ink);border-radius:16px;padding:12px 14px 14px;box-shadow:0 6px 0 rgba(36,48,58,.25);display:none;z-index:3}
+.pop.show{display:block}
+.pop.good{background:#E4F3E8;border-color:var(--ok)}
+.pop.bad{background:#FBE5E2;border-color:var(--bad)}
+.pop.warn{background:#FDF3DC;border-color:var(--warn)}
+.pop h4{font-family:var(--display);font-weight:400;font-size:clamp(20px,2.3vw,28px);margin:0 0 6px}
+.pop-body{display:flex;gap:12px;align-items:center}
+.pop-body svg{flex:0 0 auto;width:clamp(72px,8.5vw,110px);height:auto}
+.pop p{margin:0 0 4px;font-size:clamp(13px,1.3vw,15px);word-break:keep-all;line-height:1.45}
+.pop p.main{font-weight:700;font-size:clamp(15px,1.55vw,18px)}
+.pop-actions{margin-top:8px;display:flex;justify-content:flex-end}
+.pop-actions .btn{font-size:17px;padding:8px 16px}
+
+/* 슬라이더 */
+.slider+.slider{margin-top:6px}
+.slider label{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;font-weight:700}
+.slider output{font-family:var(--display);font-weight:400;font-size:19px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:12px;border:3px solid var(--ink);border-radius:999px;background:#F4F7FA}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-10px;border-radius:50%;background:#fff;border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
+input[type=range]::-moz-range-track{height:6px;border:3px solid var(--ink);border-radius:999px;background:#F4F7FA}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
+input[type=range].warm::-webkit-slider-thumb{background:var(--accent)}
+input[type=range].warm::-moz-range-thumb{background:var(--accent)}
+input[type=range].cold::-webkit-slider-thumb{background:var(--tab1)}
+input[type=range].cold::-moz-range-thumb{background:var(--tab1)}
+input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* 계절 비교 표 */
+.rec{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;border:3px solid var(--ink);border-radius:10px;overflow:hidden}
+.rec th,.rec td{padding:3px 4px;text-align:center;border-bottom:2px solid #D5DEE5;white-space:nowrap}
+.rec th{background:#F4F7FA;font-family:var(--display);font-weight:400;font-size:14px}
+.rec td:first-child{font-family:var(--display);font-size:15px}
+.rec tr:last-child td{border-bottom:none}
+.rec tr.cur td{background:#FDEBE3}
+.rec .q{color:#9AA7B2}
+.rec .good{color:var(--ok);font-weight:700}
+.rec .bad{color:var(--bad);font-weight:700}
+.rec .snow{color:#3B7BC8;font-weight:700}
+
+.site-foot{max-width:1240px;margin:auto auto 0;padding:4px 16px 8px;text-align:center;font-size:13px;color:var(--ink-2);width:100%}
+
+@media(max-width:980px){
+  .split{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .tabs{padding:0 8px;gap:4px}
+  .tab{min-width:0;flex:1 1 auto;padding:8px 7px 10px;font-size:14px;gap:5px;justify-content:center}.tab .num{width:21px;height:21px;font-size:12px}
+  .tab.active{padding-bottom:13px}
+  .tab .long{display:none}.tab .short{display:inline}
+  .btn{font-size:16px;padding:9px 14px}
+  .controls .spacer{display:none}.controls .btn{flex:1 1 calc(50% - 8px)}
+  .dots{order:-1;width:100%;justify-content:center}
+  .stage,.split .stage{width:100%}
+  .caption,.split .caption{position:static;margin-top:8px;font-size:15px}
+  .pop{position:static;width:auto;margin-top:8px}
+  .badge{top:8px;left:8px;font-size:13px;padding:4px 10px}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
 </style>
-
-<header>
-  <div class="brand">
-    <h1>우박 실험실</h1>
-    <p>적란운 속에서 우박이 만들어지는 과정</p>
-  </div>
-  <nav class="tabs" aria-label="모드 선택">
-    <button class="tab on" id="tabDemo">시연 모드</button>
-    <button class="tab" id="tabGame">체험 모드</button>
-  </nav>
-  <button id="soundBtn" data-on="true" aria-label="소리 켜기 끄기">🔊 소리 켬</button>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><h1>우박 탐구실</h1><span class="sub">적란운 속 얼음 알갱이는 어떻게 우박이 될까?</span></div>
 </header>
-
-<main>
-  <div class="stage-wrap">
-    <canvas id="stage" width="900" height="640"></canvas>
-    <div id="warnBanner" hidden>⚠ 상승 기류가 너무 셉니다!</div>
-
-    <div class="overlay" id="startOverlay" hidden>
-      <div class="overlay-card">
-        <h2>우박 키우기 도전!</h2>
-        <p>슬라이더로 <b style="color:var(--up-red)">상승 기류</b>를 조절해 작은 얼음 입자를 구름 속에 띄워 두세요.
-        차가운 물방울을 만나면 점점 커져요. 무거워질수록 더 센 기류가 필요합니다!</p>
-        <p>다 키웠다면 기류를 줄여 지상에 떨어뜨리면 크기를 측정해요.<br>
-        <b>단, 지름 5 mm를 넘겨야 우박으로 인정!</b></p>
-        <div class="row"><button class="primary" id="btnStartOverlay">도전 시작</button></div>
+<nav class="tabs" role="tablist" aria-label="활동 고르기">
+  <button class="tab active" data-tab="1" role="tab" id="tab1" aria-selected="true" aria-controls="panel1"><span class="num">1</span><span class="long">우박이 생기는 과정</span><span class="short">생기는 과정</span></button>
+  <button class="tab" data-tab="2" role="tab" id="tab2" aria-selected="false" aria-controls="panel2"><span class="num">2</span><span class="long">우박 만들기 체험</span><span class="short">우박 만들기</span></button>
+  <button class="tab" data-tab="3" role="tab" id="tab3" aria-selected="false" aria-controls="panel3"><span class="num">3</span><span class="long">우박이 잘 내리는 계절</span><span class="short">계절 비교</span></button>
+</nav>
+<main class="wrap">
+  <!-- 1. 단계별 애니메이션 -->
+  <section class="panel active" id="panel1" role="tabpanel" aria-labelledby="tab1">
+    <div class="stage">
+      <div class="stage-wrap">
+        <svg id="s1svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid meet" role="img" aria-label="적란운 속에서 우박이 생기는 과정"></svg>
+        <div class="badge" id="s1badge">1단계</div>
       </div>
+      <div class="caption" id="s1cap" aria-live="polite"></div>
     </div>
-
-    <div class="overlay" id="resultOverlay" hidden>
-      <div class="overlay-card">
-        <h2 id="resTitle"></h2>
-        <p id="resMsg"></p>
-        <div class="big-num" id="resSize"></div>
-        <canvas id="xsec" width="200" height="200"></canvas>
-        <p class="xsec-caption" id="resXsec"></p>
-        <p id="resBest"></p>
-        <div class="row">
-          <button id="btnRetry" class="primary">다시 도전</button>
-          <button id="btnToDemo">시연 모드 보기</button>
-        </div>
-      </div>
+    <div class="controls">
+      <button class="btn" id="s1prev">◀ 이전</button>
+      <div class="dots" id="s1dots" aria-label="단계 바로 가기"></div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="s1reset">↺ 처음부터</button>
+      <button class="btn" id="s1auto">▶ 자동 재생</button>
+      <button class="btn primary" id="s1next">다음 ▶</button>
     </div>
-  </div>
+  </section>
 
-  <aside class="panel">
-    <!-- 시연 모드 -->
-    <section id="demoPanel">
-      <div class="step-head">
-        <span class="step-eyebrow">단계 <b id="stepNum">1</b> / 4</span>
-        <div class="dots" id="stepDots"><i class="on"></i><i></i><i></i><i></i></div>
-      </div>
-      <h2 id="stepTitle"></h2>
-      <p id="stepDesc"></p>
-      <div class="progress"><div id="stepProg"></div></div>
-      <div class="controls">
-        <button id="btnPrev">◀ 이전</button>
-        <button id="btnPlay">▶ 재생</button>
-        <button id="btnNext">다음 ▶</button>
-      </div>
-      <div class="speed">
-        <span>재생 속도</span>
-        <button data-speed="0.5">0.5×</button>
-        <button data-speed="1" class="on">1×</button>
-        <button data-speed="1.5">1.5×</button>
-      </div>
-      <div class="ref-card">
-        <b>참고</b>
-        <ul>
-          <li>지름이 <b>5 mm보다 큰</b> 얼음 덩어리를 우박이라고 해요.</li>
-          <li>우박은 강한 상승 기류가 발달하는 <b>초여름·가을</b>에 잘 생겨요.</li>
-          <li>크기는 대부분 <b>1~5 cm</b>, 지름 <b>15 cm</b>가 넘는 것도 있어요.</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- 체험 모드 -->
-    <section id="gamePanel" hidden>
-      <h2>우박 키우기 도전!</h2>
-      <p class="hint">얼음 입자를 구름 속에 띄워 두고 최대한 큰 우박으로 키워 보세요.</p>
-      <div class="slider-row">
-        <label for="updraft">상승 기류 세기</label>
-        <output id="updraftVal">25</output>
-      </div>
-      <input type="range" id="updraft" min="0" max="100" value="25" step="1" aria-label="상승 기류 세기">
-      <p class="key-hint">키보드 ↑ ↓ 로도 조절할 수 있어요.</p>
-      <div class="gauges">
-        <div class="gauge">
-          <label><span style="color:var(--up-red);font-weight:700">현재 상승 기류</span><b id="gCurVal">35</b></label>
-          <div class="bar" id="gCur"><div></div></div>
+  <!-- 2. 우박 만들기 체험 -->
+  <section class="panel" id="panel2" role="tabpanel" aria-labelledby="tab2">
+    <div class="split">
+      <div class="stage" id="stage2">
+        <div class="stage-wrap">
+          <svg id="s2svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid meet" role="img" aria-label="적란운 속에서 얼음 알갱이를 키우는 체험"></svg>
+          <div class="badge">우박 만들기</div>
         </div>
-        <div class="gauge">
-          <label><span>입자를 띄우는 데 필요한 기류</span><b id="gNeedVal">0</b></label>
-          <div class="bar" id="gNeed"><div></div></div>
+        <div class="caption" id="s2cap" aria-live="polite"></div>
+        <div class="pop" id="s2pop" aria-live="polite">
+          <h4 id="popTitle"></h4>
+          <div class="pop-body">
+            <svg id="popSvg" viewBox="0 0 120 120" aria-hidden="true"></svg>
+            <div><p class="main" id="popMain"></p><p id="popTip"></p><p id="popBest"></p></div>
+          </div>
+          <div class="pop-actions"><button class="btn primary" id="popAgain">↺ 다시 하기</button></div>
         </div>
       </div>
-      <dl class="stats">
-        <div class="stat"><dt>현재 지름</dt><dd id="stSize">–</dd></div>
-        <div class="stat"><dt>상승·하강 반복</dt><dd id="stCycles">–</dd></div>
-        <div class="stat"><dt>상태</dt><dd id="stState">–</dd></div>
-        <div class="stat"><dt>얼음층</dt><dd id="stLayers">–</dd></div>
-      </dl>
-      <div class="best"><span>🏆 최고 기록</span><b id="bestVal">아직 없음</b></div>
-      <button id="btnStart">도전 시작</button>
-    </section>
-  </aside>
+      <aside class="side">
+        <div class="card">
+          <h3>① 상승 기류 세기 고르기</h3>
+          <div class="seg" id="s2lv">
+            <button data-lv="weak">약함<small>작은 구름</small></button>
+            <button data-lv="mid" class="sel">보통<small>적란운</small></button>
+            <button data-lv="strong">강함<small>거대한 적란운</small></button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>② 꾹 눌러서 우박 키우기</h3>
+          <button class="btn primary hold" id="hold">▲ 꾹 누르면 상승 기류</button>
+          <p class="hint">누르고 있으면 <b>올라가고</b>, 손을 떼면 <b>내려가요</b>. 무대를 누르거나 스페이스바를 눌러도 돼요.</p>
+          <div class="stats">
+            <div class="stat"><b id="s2size">0.2</b><span>지름(cm)</span></div>
+            <div class="stat"><b id="s2cyc">0</b><span>오르내림(번)</span></div>
+            <div class="stat"><b id="s2lay">1</b><span>얼음층(겹)</span></div>
+          </div>
+          <div class="meter">
+            <div class="row"><span>상승 기류</span><div class="bar"><i id="s2barU"></i><s id="s2capU"></s></div></div>
+            <div class="row"><span>우박 무게</span><div class="bar down"><i id="s2barW"></i></div></div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="btn primary" id="s2start">▶ 시작</button>
+          <button class="btn ghost" id="s2reset">↺ 다시</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 3. 계절 비교 -->
+  <section class="panel" id="panel3" role="tabpanel" aria-labelledby="tab3">
+    <div class="split">
+      <div class="stage">
+        <div class="stage-wrap">
+          <svg id="s3svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid meet" role="img" aria-label="계절에 따른 기온 분포와 우박"></svg>
+          <div class="badge" id="s3badge">초여름</div>
+        </div>
+        <div class="caption" id="s3cap" aria-live="polite"></div>
+      </div>
+      <aside class="side">
+        <div class="card">
+          <h3>① 계절 고르기</h3>
+          <div class="seg" id="s3seg">
+            <button data-s="early">초여름<small>6월</small></button>
+            <button data-s="mid">한여름<small>8월</small></button>
+            <button data-s="fall">가을<small>10월</small></button>
+            <button data-s="winter">겨울<small>1월</small></button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>② 기온 직접 바꿔 보기</h3>
+          <div class="slider"><label for="tsR"><span>땅 근처(지표) 기온</span><output id="tsO"></output></label><input type="range" id="tsR" class="warm" min="-10" max="36" step="1"></div>
+          <div class="slider"><label for="tuR"><span>약 5 km 상공 기온</span><output id="tuO"></output></label><input type="range" id="tuR" class="cold" min="-30" max="6" step="1"></div>
+        </div>
+        <div class="card">
+          <h3>③ 계절별 결과 비교</h3>
+          <table class="rec">
+            <thead><tr><th>계절</th><th>상승 기류</th><th>0 ℃ 높이</th><th>땅에 내린 것</th></tr></thead>
+            <tbody id="s3rec"></tbody>
+          </table>
+          <div class="note" id="s3note"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
 </main>
+<footer class="site-foot">© 2026 제작: earthssaem</footer>
 
 <script>
+(()=>{
 'use strict';
-/* ================================================================
-   우박 실험실 — 고등학교 지구과학 수업용
-   ================================================================ */
-const $ = id => document.getElementById(id);
-const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
-const lerp = (a,b,t) => a + (b-a)*t;
-const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/* ---------------- 사운드 (Web Audio 합성) ---------------- */
-const Sound = {
-  on: true, ctx: null, windGain: null,
-  ensure(){
-    if (!this.ctx){
-      try{
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const len = this.ctx.sampleRate * 2;
-        const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
-        const ch = buf.getChannelData(0);
-        for (let i=0;i<len;i++) ch[i] = Math.random()*2-1;
-        const src = this.ctx.createBufferSource();
-        src.buffer = buf; src.loop = true;
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'lowpass'; filter.frequency.value = 420; filter.Q.value = .4;
-        this.windGain = this.ctx.createGain();
-        this.windGain.gain.value = 0;
-        src.connect(filter).connect(this.windGain).connect(this.ctx.destination);
-        src.start();
-      }catch(e){ this.ctx = null; }
-    }
-    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-  },
-  setWind(level){          // 0~1
-    if (!this.ctx || !this.windGain) return;
-    const g = this.on ? clamp(level,0,1)*0.14 : 0;
-    this.windGain.gain.setTargetAtTime(g, this.ctx.currentTime, .25);
-  },
-  blip(freq0, freq1, dur, vol, type){
-    if (!this.ctx || !this.on) return;
-    const t = this.ctx.currentTime;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type = type || 'sine';
-    o.frequency.setValueAtTime(freq0, t);
-    o.frequency.exponentialRampToValueAtTime(Math.max(freq1,1), t+dur);
-    g.gain.setValueAtTime(vol, t);
-    g.gain.exponentialRampToValueAtTime(.0001, t+dur);
-    o.connect(g).connect(this.ctx.destination);
-    o.start(t); o.stop(t+dur+.02);
-  },
-  plink(d){ this.blip(900 - clamp(d,0,150)*3, 1400 - clamp(d,0,150)*4, .12, .18); },   // 물방울 흡수
-  layer(){ this.blip(360, 520, .18, .12, 'triangle'); },                                // 얼음층 +1
-  warn(){  this.blip(880, 880, .16, .10, 'square'); },
-  thud(d){                                                                              // 착지음
-    if (!this.ctx || !this.on) return;
-    const t = this.ctx.currentTime, dur = .3 + clamp(d,0,150)/400;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-    o.type='sine';
-    o.frequency.setValueAtTime(150, t);
-    o.frequency.exponentialRampToValueAtTime(40, t+dur);
-    g.gain.setValueAtTime(.4, t);
-    g.gain.exponentialRampToValueAtTime(.0001, t+dur);
-    o.connect(g).connect(this.ctx.destination);
-    o.start(t); o.stop(t+dur+.05);
-  }
-};
-$('soundBtn').addEventListener('click', () => {
-  Sound.on = !Sound.on;
-  Sound.ensure();
-  if (!Sound.on) Sound.setWind(0);
-  const b = $('soundBtn');
-  b.dataset.on = Sound.on;
-  b.textContent = Sound.on ? '🔊 소리 켬' : '🔇 소리 끔';
-});
-
-/* ---------------- 무대(캔버스) 공통 ---------------- */
-const stage = $('stage'), ctx = stage.getContext('2d');
-const W = 900, H = 640;
-function fitCanvas(){
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  stage.width = W*dpr; stage.height = H*dpr;
-  ctx.setTransform(dpr,0,0,dpr,0,0);
+/* ================= 공통 도구 ================= */
+const NS='http://www.w3.org/2000/svg';
+const INK='#24303A', SKY='#BFE3F5', RED='#E0452F', BLUE='#3B7BC8', CYAN='#18A0DB', DROP='#6DB6E8';
+const FONT="Jua,'Noto Sans KR',sans-serif";
+const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v, lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+function el(tag,a,p){const e=document.createElementNS(NS,tag);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function clear(g){while(g.firstChild)g.removeChild(g.firstChild);}
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let UID=0;
+function text(p,x,y,s,a){const t=el('text',Object.assign({x,y,'font-family':FONT,'font-size':18,fill:INK},a||{}),p);t.textContent=s;return t;}
+function textW(s,fs){let w=0;for(const ch of s)w+=ch===' '?fs*.3:/[\x00-\x7F]/.test(ch)?fs*.56:fs*.96;return w;}
+function tag(p,x,y,s,o){
+  o=o||{};const fs=o.fs||17,w=textW(s,fs)+fs*1.1,h=fs*1.65,x0=o.anchor==='start'?x:o.anchor==='end'?x-w:x-w/2;
+  const g=el('g',{},p);
+  el('rect',{x:x0,y:y-h/2,width:w,height:h,rx:h/2,fill:o.fill||'#fff',stroke:INK,'stroke-width':3},g);
+  text(g,x0+w/2,y+fs*.36,s,{'font-size':fs,'text-anchor':'middle',fill:o.color||INK});
+  return g;
 }
-fitCanvas();
-addEventListener('resize', fitCanvas);
+// 경로 길이 재기용 (화면에 보이지 않는 SVG)
+const MEAS=el('svg',{width:0,height:0,style:'position:absolute;width:0;height:0;overflow:hidden','aria-hidden':'true'});
+document.body.appendChild(MEAS);
+function track(d){const p=el('path',{d},MEAS);const L=p.getTotalLength();return{L,at(s){const q=p.getPointAtLength(clamp(s,0,L));return{x:q.x,y:q.y};}};}
 
-const GROUND_Y = 580, ZERO_Y = 300;
-const CLOUD_TOP = 95, CLOUD_BASE = 495;
+// 테두리 있는 흐름 화살표
+function arrow(p,d,color,o){
+  o=o||{};const w=o.w||7,hl=o.head||w*1.6+8,tr=track(d),L=tr.L;
+  const g=el('g',{},p),dash=`${(L-hl*.7).toFixed(1)} ${L+60}`;
+  el('path',{d,fill:'none',stroke:INK,'stroke-width':w+6,'stroke-linecap':'round','stroke-dasharray':dash},g);
+  el('path',{d,fill:'none',stroke:color,'stroke-width':w,'stroke-linecap':'round','stroke-dasharray':dash},g);
+  const flow=el('path',{d,fill:'none',stroke:'#fff','stroke-opacity':.75,'stroke-width':Math.max(2,w*.32),'stroke-linecap':'round','stroke-dasharray':'7 21'},g);
+  const a=tr.at(L),b=tr.at(L-6),ang=Math.atan2(a.y-b.y,a.x-b.x);
+  const bx=a.x-Math.cos(ang)*hl,by=a.y-Math.sin(ang)*hl,nx=-Math.sin(ang)*hl*.62,ny=Math.cos(ang)*hl*.62;
+  el('polygon',{points:`${a.x},${a.y} ${bx+nx},${by+ny} ${bx-nx},${by-ny}`,fill:color,stroke:INK,'stroke-width':3,'stroke-linejoin':'round'},g);
+  return{g,flow};
+}
+function vArrow(g,x,y1,y2,color){
+  const dir=Math.sign(y2-y1)||1,hl=12;
+  el('line',{x1:x,y1,x2:x,y2:y2-dir*hl*.6,stroke:INK,'stroke-width':10,'stroke-linecap':'round'},g);
+  el('line',{x1:x,y1,x2:x,y2:y2-dir*hl*.6,stroke:color,'stroke-width':5,'stroke-linecap':'round'},g);
+  el('polygon',{points:`${x},${y2} ${x-9},${y2-dir*hl} ${x+9},${y2-dir*hl}`,fill:color,stroke:INK,'stroke-width':2.5,'stroke-linejoin':'round'},g);
+}
+function hex(x,y,r){let s='';for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;s+=`${(x+Math.cos(a)*r).toFixed(1)},${(y+Math.sin(a)*r).toFixed(1)} `;}return s;}
+function raindrop(g,x,y,s,fill){el('path',{d:`M${x},${y-8*s} C${x+6*s},${y-1*s} ${x+6*s},${y+6*s} ${x},${y+6*s} C${x-6*s},${y+6*s} ${x-6*s},${y-1*s} ${x},${y-8*s} Z`,fill:fill||DROP,stroke:INK,'stroke-width':2},g);}
+function flake(g,x,y,r){
+  for(const c of [[INK,4.5],['#fff',2.2]]){const gg=el('g',{stroke:c[0],'stroke-width':c[1],'stroke-linecap':'round'},g);
+    for(let i=0;i<3;i++){const a=i*Math.PI/3;el('line',{x1:x-Math.cos(a)*r,y1:y-Math.sin(a)*r,x2:x+Math.cos(a)*r,y2:y+Math.sin(a)*r},gg);}}
+}
+function scallop(x1,y1,x2,y2,n,dep){let d='';for(let i=1;i<=n;i++){const xa=lerp(x1,x2,(i-1)/n),ya=lerp(y1,y2,(i-1)/n),xb=lerp(x1,x2,i/n),yb=lerp(y1,y2,i/n);d+=` Q${((xa+xb)/2).toFixed(1)},${((ya+yb)/2+dep).toFixed(1)} ${xb.toFixed(1)},${yb.toFixed(1)}`;}return d;}
 
+/* ---------- 풍경 ---------- */
+function drawSun(g,x,y,r,col){
+  const rays=el('g',{stroke:INK,'stroke-width':4,'stroke-linecap':'round'},g);
+  for(let i=0;i<10;i++){const a=i*Math.PI/5;el('line',{x1:x+Math.cos(a)*(r+8),y1:y+Math.sin(a)*(r+8),x2:x+Math.cos(a)*(r+17),y2:y+Math.sin(a)*(r+17)},rays);}
+  el('circle',{cx:x,cy:y,r,fill:col||'#FFD54A',stroke:INK,'stroke-width':4},g);
+}
+function drawGround(g,col){
+  el('path',{d:'M-10,400 C150,393 300,406 480,400 S800,393 970,400 L970,560 L-10,560 Z',fill:col,stroke:INK,'stroke-width':4},g);
+}
+function drawTree(g,x,y,col,s){
+  s=s||1;
+  el('rect',{x:x-4*s,y:y-24*s,width:8*s,height:26*s,fill:'#8C6B4F',stroke:INK,'stroke-width':3},g);
+  if(col){el('circle',{cx:x,cy:y-34*s,r:17*s,fill:col,stroke:INK,'stroke-width':3},g);}
+  else{const b=el('g',{stroke:INK,'stroke-width':3,'stroke-linecap':'round',fill:'none'},g);
+    el('path',{d:`M${x},${y-22*s} L${x-12*s},${y-40*s} M${x},${y-26*s} L${x+11*s},${y-44*s} M${x},${y-24*s} L${x},${y-48*s}`},b);}
+}
+function drawHouse(g,x,y){
+  el('rect',{x:x-30,y:y-42,width:60,height:44,fill:'#FFF1D6',stroke:INK,'stroke-width':3},g);
+  el('path',{d:`M${x-40},${y-40} L${x},${y-72} L${x+40},${y-40} Z`,fill:'#E8553E',stroke:INK,'stroke-width':3,'stroke-linejoin':'round'},g);
+  el('rect',{x:x-8,y:y-24,width:16,height:26,fill:'#8C6B4F',stroke:INK,'stroke-width':3},g);
+  el('rect',{x:x+12,y:y-33,width:12,height:12,fill:SKY,stroke:INK,'stroke-width':2.5},g);
+}
+function drawCar(g,x,y){
+  el('path',{d:`M${x-40},${y-10} L${x-40},${y-24} Q${x-38},${y-28} ${x-30},${y-28} L${x-20},${y-28} L${x-10},${y-42} L${x+16},${y-42} L${x+28},${y-28} L${x+36},${y-28} Q${x+42},${y-26} ${x+42},${y-20} L${x+42},${y-10} Z`,fill:'#5B9BD5',stroke:INK,'stroke-width':3,'stroke-linejoin':'round'},g);
+  el('path',{d:`M${x-13},${y-29} L${x-6},${y-38} L${x+13},${y-38} L${x+21},${y-29} Z`,fill:'#E4F4FC',stroke:INK,'stroke-width':2.5,'stroke-linejoin':'round'},g);
+  for(const wx of [x-24,x+26]){el('circle',{cx:wx,cy:y-8,r:8,fill:INK},g);el('circle',{cx:wx,cy:y-8,r:3,fill:'#C9D3DC'},g);}
+}
 
-/* 구름 뭉게 (결정적 배치) */
-function rng(seed){ let s = seed; return () => (s = (s*16807)%2147483647) / 2147483647; }
-const puffs = (() => {
-  const r = rng(20260830), list = [];
-  const rows = [
-    {y:478, x0:262, x1:618, r:46, n:9},
-    {y:432, x0:238, x1:642, r:44, n:10},
-    {y:378, x0:248, x1:632, r:42, n:9},
-    {y:322, x0:258, x1:622, r:40, n:9},
-    {y:268, x0:252, x1:628, r:38, n:9},
-    {y:216, x0:262, x1:618, r:36, n:9},
-    {y:164, x0:222, x1:678, r:36, n:11},          // 모루(anvil) — 위가 넓게 퍼진다
-    {y:120, x0:196, x1:704, r:32, n:12},
-    {y:86,  x0:256, x1:640, r:26, n:10},
-  ];
-  for (const row of rows)
-    for (let i=0;i<row.n;i++){
-      const t = row.n===1 ? .5 : i/(row.n-1);
-      list.push({ x: lerp(row.x0,row.x1,t) + (r()-.5)*22,
-                  y: row.y + (r()-.5)*16,
-                  r: row.r * (0.82 + r()*.36) });
+/* ---------- 구름: 동글동글한 뭉게구름 덩어리를 겹쳐 그리기 ---------- */
+function mix(a,b,t){const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16),c=[16,8,0].map(s=>Math.round(lerp(pa>>s&255,pb>>s&255,t)));return'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');}
+function cloudSpec(sp){
+  const {cx,base,top,hw,anvil}=sp,R=rng(sp.seed||7),C=[],P=[];
+  const k=clamp(hw/170,.5,1);
+  // 1) 평평한 구름 밑면
+  const br=26*k+8,nb=Math.max(3,Math.round(2*hw/(br*1.25)));
+  for(let i=0;i<nb;i++){const r=br*(.85+R()*.3);C.push({x:cx-hw+br*.9+i*(2*hw-1.8*br)/(nb-1),y:base-r+6,r});}
+  // 2) 위로 솟은 몸통 (적란운은 위에서 모루 쪽으로 퍼짐)
+  const tEnd=anvil?top+40:top+34*k;
+  let y=base-br*1.3;
+  while(y>tEnd){
+    const tn=clamp((base-y)/(base-tEnd),0,1);
+    let prof;
+    if(anvil)prof=tn<.6?1-.22*tn/.6:tn<.84?.78+.03*Math.sin(tn*20):.78+.4*ease((tn-.84)/.16);
+    else prof=1-.5*tn*tn;
+    const lean=anvil?tn*tn*hw*.1:0;
+    const w=hw*prof*(.93+R()*.14),r=(anvil?42:38)*k*(.8+R()*.45);
+    const n=Math.max(1,Math.round(2*w/(r*1.25)));
+    for(let j=0;j<n;j++){
+      const x=n===1?cx:cx-w+r*.7+j*(2*w-1.4*r)/(n-1);
+      C.push({x:x+lean+(R()-.5)*18,y:y+(R()-.5)*16,r:r*(.85+R()*.3)});
     }
-  return list;
+    y-=r*(.6+R()*.2);
+  }
+  if(anvil){ // 모루구름: 꼭대기가 평평하게, 바람 부는 쪽(오른쪽)으로 길게 퍼짐
+    const aL=cx-hw*1.25,aR=cx+hw*2,aT=top;
+    let d=`M${aL},${aT+30} C${aL-6},${aT+10} ${aL+14},${aT} ${aL+44},${aT}`;
+    d+=scallop(aL+44,aT,aR-60,aT+2,8,-4);
+    d+=` C${aR-20},${aT+3} ${aR+6},${aT+10} ${aR},${aT+20}`;
+    d+=` C${aR-50},${aT+30} ${cx+hw*.9},${aT+52} ${cx+hw*.4},${aT+60}`;
+    d+=` L${cx-hw*.4},${aT+60} C${cx-hw*.9},${aT+56} ${aL+30},${aT+48} ${aL},${aT+30} Z`;
+    P.push(d);
+    C.push({x:cx+hw*.12,y:top+12,r:30*k},{x:cx-hw*.1,y:top+22,r:22*k},{x:cx+hw*.34,y:top+22,r:22*k});
+  }else{
+    const r=38*k*1.1;
+    C.push({x:cx+(R()-.5)*16,y:top+r,r},{x:cx-r*.95,y:top+r*1.55,r:r*.85},{x:cx+r*.95,y:top+r*1.5,r:r*.9});
+  }
+  return{C,P};
+}
+function drawCloud(parent,defs,sp,pal){
+  const {C,P}=cloudSpec(sp);
+  const col=Object.assign({hiT:'#FFFFFF',hiB:'#EDF1F5',shT:'#D6DEE6',shB:'#B9C5D0',mid:'#DFE6EC',base:'#A3B1BF',line:'rgba(36,48,58,.16)'},pal||{});
+  const g=el('g',{},parent),id='cl'+(++UID),cp=el('clipPath',{id},defs);
+  const add=(grp,a)=>{P.forEach(d=>el('path',Object.assign({d},a||{}),grp));C.forEach(c=>el('circle',Object.assign({cx:c.x.toFixed(1),cy:c.y.toFixed(1),r:c.r.toFixed(1)},a||{}),grp));};
+  add(cp);
+  add(el('g',{fill:INK,stroke:INK,'stroke-width':8,'stroke-linejoin':'round'},g));
+  const inner=el('g',{'clip-path':`url(#${id})`},g);
+  el('rect',{x:sp.cx-sp.hw*2.6,y:-20,width:sp.hw*5.2+60,height:sp.base+60,fill:col.mid},inner);
+  P.forEach(d=>{el('path',{d,fill:col.hiT},inner);el('path',{d,fill:col.mid,transform:'translate(0,18)'},inner);});
+  const H=Math.max(1,sp.base-sp.top);
+  [...C].sort((a,b)=>a.y-b.y).forEach(c=>{
+    const f=clamp((c.y-sp.top)/H,0,1);
+    el('circle',{cx:c.x.toFixed(1),cy:c.y.toFixed(1),r:c.r.toFixed(1),fill:mix(col.shT,col.shB,f),stroke:col.line,'stroke-width':2},inner);
+    el('circle',{cx:(c.x-c.r*.13).toFixed(1),cy:(c.y-c.r*.17).toFixed(1),r:(c.r*.83).toFixed(1),fill:mix(col.hiT,col.hiB,f)},inner);
+  });
+  const x1=sp.cx-sp.hw-60,x2=sp.cx+sp.hw*1.4,b=sp.base;
+  el('path',{d:`M${x1},${b-22}`+scallop(x1,b-22,x2,b-22,Math.round((x2-x1)/40),-9)+` L${x2},${b+30} L${x1},${b+30} Z`,fill:col.base,stroke:col.line,'stroke-width':2},inner);
+  return{g,clip:id};
+}
+
+/* 우박 단면 (radii는 안쪽부터) */
+function crossSection(g,cx,cy,radii,types,o){
+  o=o||{};const R=rng(o.seed||9);
+  for(let i=radii.length-1;i>=0;i--){
+    const outer=i===radii.length-1;
+    el('circle',{cx,cy,r:radii[i],fill:types[i]==='clear'?'#CFEAF8':'#FFFFFF',stroke:INK,'stroke-width':outer?(o.ow||3):1.5,'stroke-opacity':outer?1:.45},g);
+    if(o.bubbles&&types[i]!=='clear'){
+      const r0=i?radii[i-1]:0,r1=radii[i],n=Math.round((r1*r1-r0*r0)/260);
+      for(let k=0;k<n;k++){const a=R()*6.283,rr=r0+(r1-r0)*(.2+R()*.6);el('circle',{cx:cx+Math.cos(a)*rr,cy:cy+Math.sin(a)*rr,r:1+R()*1.4,fill:'#B7C7D5'},g);}
+    }
+  }
+}
+
+/* ================= 공통 장면(1·2탭) ================= */
+const Y0=250,YTOP=130,YMID=190,BASE=345,GROUND=400;
+const CB={cx:450,base:BASE,top:52,hw:175,anvil:true,seed:11};
+const UP_PATHS=['M40,392 C150,380 240,352 292,300 S330,200 336,150','M112,404 C212,392 300,362 346,308 S382,196 388,136','M190,412 C280,402 352,372 400,318 S436,204 440,146'];
+const DOWN_PATHS=['M548,168 C576,214 588,268 580,320 S586,368 598,392','M604,184 C634,232 644,286 638,334 S648,374 664,392'];
+
+function baseScene(svg,o){
+  const defs=el('defs',{},svg);
+  el('rect',{x:-10,y:-10,width:980,height:560,fill:SKY},svg);
+  const sun=el('g',{},svg);drawSun(sun,o.sunX,o.sunY,o.sunR);
+  const heat=el('g',{},svg);
+  const ground=el('g',{},svg);
+  drawGround(ground,'#A6D56F');
+  drawTree(ground,20,401,'#6AAE78',.8);drawTree(ground,940,402,'#6AAE78',.9);
+  drawCar(ground,700,402);drawHouse(ground,815,402);
+  const cloudL=el('g',{},svg);
+  return{defs,sun,heat,ground,cloudL};
+}
+function drawZero(g,y,side){
+  el('line',{x1:0,y1:y,x2:960,y2:y,stroke:INK,'stroke-width':3,'stroke-dasharray':'14 10'},g);
+  tag(g,side==='left'?44:916,y,'0 ℃',{fs:17});
+}
+function squiggle(){return'M0,0 q7,-7 0,-14 q-7,-7 0,-14 q7,-7 0,-14';}
+
+/* ================= 1탭: 단계별 애니메이션 ================= */
+const S1=(()=>{
+  const svg=$('#s1svg'),sc=baseScene(svg,{sunX:92,sunY:122,sunR:32});
+  const heatP=[];for(let i=0;i<5;i++)heatP.push(el('path',{d:squiggle(),fill:'none',stroke:'#E8553E','stroke-width':3.5,'stroke-linecap':'round'},sc.heat));
+  const clouds=[{cx:450,base:BASE,top:262,hw:104,seed:3},{cx:450,base:BASE,top:150,hw:146,seed:5},CB].map(s=>drawCloud(sc.cloudL,sc.defs,s));
+  const zero=el('g',{},svg);drawZero(zero,Y0,'left');
+  const upG=el('g',{},svg),downG=el('g',{},svg),flows=[];
+  UP_PATHS.forEach(d=>flows.push(arrow(upG,d,RED).flow));
+  DOWN_PATHS.forEach(d=>flows.push(arrow(downG,d,BLUE,{w:6}).flow));
+  tag(upG,112,356,'상승 기류',{fill:'#FBE5E2'});
+  tag(downG,712,262,'하강 기류',{fill:'#DDE9F7'});
+  const back=el('g',{},svg),dyn=el('g',{},svg),top=el('g',{},svg);
+  const SEQ=[13,24,33,42,51,60],TYP=['white','clear','white','clear','white','clear'];
+
+  function makeDrops(g){
+    const R=rng(21),list=[];
+    for(let i=0;i<26;i++){const x=312+R()*276,y=140+R()*102;list.push({ph:R()*6.28,e:el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:3.6,fill:DROP,stroke:INK,'stroke-width':1.6},g)});}
+    for(let i=0;i<8;i++){const x=330+R()*240,y=142+R()*80;list.push({ph:R()*6.28,e:el('polygon',{points:hex(x,y,5),fill:'#fff',stroke:INK,'stroke-width':1.8},g)});}
+    for(let i=0;i<10;i++){const x=318+R()*262,y=262+R()*62;list.push({ph:R()*6.28,e:el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:3.4,fill:DROP,stroke:INK,'stroke-width':1.6},g)});}
+    return list;
+  }
+  function drift(list,T){if(RM)return;for(const d of list)d.e.setAttribute('transform',`translate(${(Math.sin(T*.9+d.ph)*3).toFixed(1)},${(Math.cos(T*.7+d.ph)*3).toFixed(1)})`);}
+  function makeInset(g,cx,cy,r){
+    const id='in'+(++UID),cp=el('clipPath',{id},sc.defs);el('circle',{cx,cy,r},cp);
+    const lead=el('line',{stroke:INK,'stroke-width':2.5,'stroke-dasharray':'5 5'},g);
+    el('line',{x1:cx+r*.72,y1:cy+r*.72,x2:cx+r*1.02,y2:cy+r*1.02,stroke:INK,'stroke-width':12,'stroke-linecap':'round'},g);
+    el('circle',{cx,cy,r:r+2,fill:'#F4FAFE',stroke:INK,'stroke-width':5},g);
+    const c=el('g',{'clip-path':`url(#${id})`},g);
+    return{c,lead,cx,cy,r,point(px,py,pr){const a=Math.atan2(py-cy,px-cx);lead.setAttribute('x1',(px-Math.cos(a)*(pr||0)).toFixed(1));lead.setAttribute('y1',(py-Math.sin(a)*(pr||0)).toFixed(1));lead.setAttribute('x2',(cx+Math.cos(a)*(r+3)).toFixed(1));lead.setAttribute('y2',(cy+Math.sin(a)*(r+3)).toFixed(1));}};
+  }
+  function drawP(g,x,y,r,n){
+    clear(g);
+    el('circle',{cx:x,cy:y,r:r+5,fill:'none',stroke:'#FFD54A','stroke-width':3.5},g);
+    el('circle',{cx:x,cy:y,r,fill:'#fff',stroke:INK,'stroke-width':2.5},g);
+    for(let k=1;k<Math.min(n||1,4);k++)el('circle',{cx:x,cy:y,r:r*(1-k*.22),fill:k%2?'#DDF0FA':'#fff',stroke:INK,'stroke-width':1,'stroke-opacity':.4},g);
+  }
+  function stoneIn(I,g,radii){clear(g);crossSection(g,I.cx,I.cy,radii,TYP.slice(0,radii.length),{ow:3});}
+
+  const P3='M330,236 C336,190 360,146 392,140';
+  const SEG4=['M392,140 C412,140 400,262 420,262','M420,262 C440,262 432,134 452,134','M452,134 C472,134 464,262 484,262','M484,262 C504,262 496,128 520,128'];
+  const P4=SEG4.map((s,i)=>i?s.replace(/^M[\d.,]+ /,''):s).join(' ');
+  const P5='M520,128 C548,128 562,196 572,252 S588,352 598,388';
+  let v={};
+
+  const STEPS=[
+    {title:'적란운이 자라요',dur:4.2,
+     cap:'햇볕에 땅이 뜨겁게 데워지면 따뜻한 공기가 <b>강한 상승 기류</b>가 되어 솟아올라요. 수증기가 식어 구름이 계속 쌓이면서 키가 아주 큰 <b>적란운</b>이 돼요.',
+     enter(){
+       const lab=el('g',{opacity:0},dyn);v.lab=lab;
+       el('line',{x1:893,y1:66,x2:893,y2:388,stroke:INK,'stroke-width':3,'stroke-dasharray':'2 8','stroke-linecap':'round'},lab);
+       el('polygon',{points:'893,56 885,70 901,70',fill:INK},lab);el('polygon',{points:'893,398 885,384 901,384',fill:INK},lab);
+       tag(lab,893,122,'적란운',{fs:21});tag(lab,893,226,'높이 10 km 이상',{fs:15});
+     },
+     tick(t,T){
+       const st=[0,1.2,2.4],k=t>=2.4?2:t>=1.2?1:0,tk=t-st[k];
+       clouds.forEach((c,j)=>{
+         if(j===k){c.g.style.display='';c.g.style.opacity=ease(tk/.35);const s=.93+.07*ease(tk/.45);c.g.setAttribute('transform',`translate(450,${BASE}) scale(${s.toFixed(3)}) translate(-450,${-BASE})`);}
+         else if(j===k-1&&tk<.35){c.g.style.display='';c.g.style.opacity=1-ease(tk/.35);}
+         else c.g.style.display='none';
+       });
+       upG.style.opacity=ease((t-.2)/1);
+       v.lab.setAttribute('opacity',ease((t-2.8)/.5));
+       heatP.forEach((p,i)=>{const ph=RM?.3:(T*.55+i*.23)%1;p.setAttribute('transform',`translate(${72+i*46},${398-ph*46})`);p.setAttribute('opacity',(1-ph).toFixed(2));});
+     }},
+    {title:'구름 속을 들여다봐요',dur:2.5,
+     cap:'<b>0 ℃ 선</b>보다 높은 곳은 영하예요. 이곳에는 작은 <b>얼음 알갱이</b>와, 영하인데도 얼지 않은 <b>과냉각 물방울</b>이 함께 떠 있어요.',
+     enter(){
+       v.drops=makeDrops(back);
+       v.tags=el('g',{},dyn);
+       tag(v.tags,170,206,'0 ℃보다 차가운 곳',{fs:15,fill:'#DDE9F7'});
+       tag(v.tags,170,294,'0 ℃보다 따뜻한 곳',{fs:15,fill:'#FBE5E2'});
+       v.ins=el('g',{},top);const I=makeInset(v.ins,850,245,78);I.point(566,196,0);
+       const c=I.c;
+       el('polygon',{points:hex(818,236,17),fill:'#fff',stroke:INK,'stroke-width':3},c);
+       text(c,818,273,'얼음',{'font-size':14,'text-anchor':'middle'});text(c,818,289,'알갱이',{'font-size':14,'text-anchor':'middle'});
+       [[872,210,10],[896,240,9],[866,256,11]].forEach(d=>{el('circle',{cx:d[0],cy:d[1],r:d[2],fill:DROP,stroke:INK,'stroke-width':2.5},c);el('circle',{cx:d[0]-d[2]*.35,cy:d[1]-d[2]*.35,r:d[2]*.25,fill:'#fff'},c);});
+       text(c,880,289,'과냉각',{'font-size':14,'text-anchor':'middle'});text(c,880,305,'물방울',{'font-size':14,'text-anchor':'middle'});
+       tag(v.ins,850,150,'영하인데도 액체예요!',{fs:15,fill:'#FFF4D6'});
+     },
+     tick(t,T){const o=ease(t/.8);back.style.opacity=o;v.tags.setAttribute('opacity',ease((t-.4)/.6));v.ins.setAttribute('opacity',ease((t-.9)/.6));zero.style.opacity=ease(t/.5);drift(v.drops,T);}},
+    {title:'올라가며 커져요',dur:4.6,
+     cap:'얼음 알갱이가 <b>상승 기류</b>를 타고 올라가며 과냉각 물방울과 부딪혀요. 물방울이 알갱이에 닿자마자 <b>얼어붙어서</b> 알갱이가 조금씩 커져요.',
+     enter(){
+       v.drops=makeDrops(back);v.tr=track(P3);
+       v.trail=el('path',{d:P3,fill:'none',stroke:CYAN,'stroke-width':4,'stroke-linecap':'round','stroke-dasharray':`0 ${v.tr.L+20}`},dyn);
+       v.catch=[.14,.32,.5,.68,.86].map((f,k)=>{const p=v.tr.at(v.tr.L*f),x=p.x+(k%2?12:-12),y=p.y-5;return{f,x,y,e:el('circle',{cx:x,cy:y,r:4,fill:DROP,stroke:INK,'stroke-width':1.6},dyn)};});
+       v.pg=el('g',{},dyn);
+       v.ins=el('g',{},top);v.I=makeInset(v.ins,850,245,78);v.st=el('g',{},v.I.c);v.fly=el('g',{},v.I.c);
+       tag(v.ins,850,150,'닿으면 얼어붙어요!',{fs:15,fill:'#FFF4D6'});
+       v.seedTag=tag(dyn,316,236,'작은 얼음 알갱이',{fs:14,anchor:'end'});
+     },
+     tick(t,T){
+       drift(v.drops,T);v.seedTag.setAttribute('opacity',1-ease((t-1.6)/.5));
+       const f=ease((t-.3)/3.8),p=v.tr.at(v.tr.L*f);
+       v.trail.setAttribute('stroke-dasharray',`${(v.tr.L*f).toFixed(1)} ${v.tr.L+20}`);
+       for(const c of v.catch){const k=clamp((f-c.f+.06)/.08,0,1);c.e.setAttribute('cx',lerp(c.x,p.x,k));c.e.setAttribute('cy',lerp(c.y,p.y,k));c.e.setAttribute('r',(4*(1-k)).toFixed(2));}
+       const r=5+2.5*f;drawP(v.pg,p.x,p.y,r,2);v.I.point(p.x,p.y,r+6);
+       stoneIn(v.I,v.st,[13,13+11*f]);
+       clear(v.fly);if(t<4.2&&!RM)for(let i=0;i<3;i++){const ph=(T*.8+i/3)%1,a=i*2.1+1,rr=lerp(74,15+11*f,ease(ph));el('circle',{cx:850+Math.cos(a)*rr,cy:245+Math.sin(a)*rr,r:6,fill:DROP,stroke:INK,'stroke-width':2},v.fly);}
+     }},
+    {title:'오르락내리락 반복해요',dur:6.4,
+     cap:'무거워진 알갱이는 내려가다가 다시 <b>강한 상승 기류</b>를 만나 올라가요. <b>상승과 하강을 반복</b>할 때마다 물방울이 얼어붙어 얼음층이 한 겹씩 늘어나요.',
+     enter(){
+       v.drops=makeDrops(back);
+       el('path',{d:P3,fill:'none',stroke:CYAN,'stroke-width':4,'stroke-linecap':'round'},dyn);
+       v.segs=SEG4.map(track);v.tot=v.segs.reduce((a,s)=>a+s.L,0);
+       v.trail=el('path',{d:P4,fill:'none',stroke:CYAN,'stroke-width':4,'stroke-linecap':'round','stroke-dasharray':`0 ${v.tot+20}`},dyn);
+       v.pg=el('g',{},dyn);
+       v.ins=el('g',{},top);v.I=makeInset(v.ins,850,245,78);v.st=el('g',{},v.I.c);v.lbl=el('g',{},v.ins);v.n=-1;
+     },
+     tick(t,T){
+       drift(v.drops,T);
+       const tt=clamp(t-.3,0,6),k=Math.min(3,Math.floor(tt/1.5)),u=ease((tt-k*1.5)/1.5);
+       const p=v.segs[k].at(v.segs[k].L*u);
+       let done=0;for(let i=0;i<k;i++)done+=v.segs[i].L;done+=v.segs[k].L*u;
+       v.trail.setAttribute('stroke-dasharray',`${done.toFixed(1)} ${v.tot+20}`);
+       const prog=(k+u)/4,r=7.5+4.5*prog;drawP(v.pg,p.x,p.y,r,2+k);v.I.point(p.x,p.y,r+6);
+       const radii=SEQ.slice(0,2+k);radii.push(lerp(SEQ[1+k],SEQ[2+k],u));stoneIn(v.I,v.st,radii);
+       const n=radii.length;if(n!==v.n){v.n=n;clear(v.lbl);tag(v.lbl,850,150,`얼음층 ${n}겹`,{fs:16,fill:'#FFF4D6'});}
+     }},
+    {title:'땅으로 떨어져요',dur:5.2,
+     cap:'얼음 덩어리가 <b>상승 기류가 떠받치지 못할 만큼 무거워지면</b> 땅으로 떨어져요. 이것이 <b>우박</b>이에요. 우박은 유리창을 깨거나 자동차·농작물에 피해를 주기도 해요.',
+     enter(){
+       el('path',{d:P3+' '+P4.replace(/^M[\d.,]+ /,''),fill:'none',stroke:CYAN,'stroke-width':4,'stroke-linecap':'round',opacity:.5},dyn);
+       v.tr=track(P5);v.shaft=el('g',{},dyn);v.pile=el('g',{opacity:0},dyn);v.fg=el('g',{},dyn);v.pg=el('g',{},dyn);
+       const R=rng(33);v.stones=Array.from({length:14},()=>({x:556+R()*196,ph:R(),r:3.5+R()*3}));
+       for(let i=0;i<16;i++){const x=520+R()*250,onCar=x>662&&x<742;el('circle',{cx:x,cy:(onCar?(x>690&&x<716?354:370):396)-R()*2,r:3+R()*2.5,fill:'#fff',stroke:INK,'stroke-width':2},v.pile);}
+       v.heavy=el('g',{opacity:0},dyn);tag(v.heavy,640,150,'상승 기류보다 무거워요!',{fs:15,fill:'#FFF4D6'});
+       v.hail=el('g',{opacity:0},dyn);tag(v.hail,482,374,'우박',{fs:19});
+     },
+     tick(t,T){
+       clear(v.fg);let p,r=12;
+       if(t<1.5){p={x:520,y:128};const dn=lerp(18,60,ease(t/1.3));vArrow(v.fg,520,128-16,128-16-34,RED);vArrow(v.fg,520,128+16,128+16+dn,BLUE);
+         text(v.fg,500,98,'상승 기류',{'font-size':14,'text-anchor':'end',fill:'#B8321F'});text(v.fg,540,165,'무게',{'font-size':14,fill:'#2A5F9E'});}
+       else if(t<3.3){const u=Math.pow((t-1.5)/1.8,1.5);p=v.tr.at(v.tr.L*u);}
+       else{const b=t-3.3;p=v.tr.at(v.tr.L);p={x:p.x+Math.min(b,.4)*20,y:p.y-(b<.4?Math.sin(b/.4*Math.PI)*14:0)};}
+       v.heavy.setAttribute('opacity',ease((t-.9)/.4)*(t<3?1:1-ease((t-3)/.4)));
+       drawP(v.pg,p.x,p.y,r,4);
+       clear(v.shaft);
+       if(t>1.8){for(const s of v.stones){const ph=RM?s.ph:(T*.55+s.ph)%1,onCar=s.x>662&&s.x<742,floor=onCar?(s.x>690&&s.x<716?354:370):396;
+         const y=ph<.8?lerp(350,floor,Math.pow(ph/.8,1.5)):floor-Math.sin((ph-.8)/.2*Math.PI)*10*(1-(ph-.8)/.2);
+         el('circle',{cx:s.x,cy:y,r:s.r,fill:'#fff',stroke:INK,'stroke-width':2},v.shaft);}}
+       v.pile.setAttribute('opacity',ease((t-3.2)/.8));v.hail.setAttribute('opacity',ease((t-3.3)/.4));
+     }},
+    {title:'우박을 잘라 보면',dur:3.8,
+     cap:'우박을 잘라 보면 <b>양파처럼 여러 겹의 층</b>이 보여요. 구름 속에서 <b>상승과 하강을 여러 번 반복</b>하며 자랐다는 증거예요. 크기는 대부분 <b>1~5 cm</b>예요.',
+     enter(){
+       el('rect',{x:-10,y:-10,width:980,height:560,fill:'#FFFDF8','fill-opacity':.9},top);
+       v.cs=el('g',{},top);v.lab=el('g',{opacity:0},top);
+       const L=v.lab,card=(y,t1,t2,px,py,fill)=>{
+         el('line',{x1:px,y1:py,x2:470,y2:y+30,stroke:INK,'stroke-width':2.5},L);el('circle',{cx:px,cy:py,r:5,fill:INK},L);
+         el('rect',{x:470,y,width:440,height:60,rx:12,fill,stroke:INK,'stroke-width':3},L);
+         text(L,486,y+25,t1,{'font-size':19});text(L,486,y+48,t2,{'font-size':14,'font-family':"'Noto Sans KR',sans-serif",fill:'#4A5763'});
+       };
+       card(64,'처음 얼음 알갱이 (씨앗)','여기서부터 자라기 시작했어요',255,228,'#fff');
+       card(144,'하얀 층','아주 차가운 곳에서 순식간에 얼어 공기 방울이 갇혀요',344,166,'#fff');
+       card(224,'투명한 층','덜 차가운 곳에서 천천히 얼어 맑은 얼음이 돼요',346,252,'#E6F4FB');
+       text(L,470,322,'우박 크기 비교 (대부분 1~5 cm)',{'font-size':17});
+       [[500,1,'1 cm 콩'],[580,2.5,'2.5 cm'],[680,4,'4 cm 탁구공'],[800,5,'5 cm']].forEach(a=>{
+         el('circle',{cx:a[0],cy:372,r:a[1]*6,fill:'#fff',stroke:INK,'stroke-width':2.5},L);
+         text(L,a[0],372+a[1]*6+18,a[2],{'font-size':14,'text-anchor':'middle','font-family':"'Noto Sans KR',sans-serif"});
+       });
+     },
+     tick(t){
+       clear(v.cs);const radii=[36,62,86,108,128,148],n=Math.min(6,Math.floor(t/.3)+1),cur=[];
+       for(let i=0;i<n;i++)cur.push(i<n-1?radii[i]:lerp(i?radii[i-1]:0,radii[i],ease((t-i*.3)/.3)));
+       crossSection(v.cs,250,232,cur,TYP.slice(0,n),{bubbles:true,ow:4,seed:4});
+       if(n>=1)el('polygon',{points:hex(250,232,9),fill:'#fff',stroke:INK,'stroke-width':2},v.cs);
+       v.lab.setAttribute('opacity',ease((t-1.9)/.6));
+     }},
+  ];
+
+  const st={i:0,t0:0,auto:false,seen:new Set([0])};
+  const dotsBox=$('#s1dots');
+  const dots=STEPS.map((s,i)=>{const b=document.createElement('button');b.className='dot';b.textContent=i+1;b.title=`${i+1}단계: ${s.title}`;b.setAttribute('aria-label',`${i+1}단계 ${s.title}`);b.addEventListener('click',()=>{stopAuto();go(i);});dotsBox.appendChild(b);return b;});
+  function go(i){
+    st.i=clamp(i,0,STEPS.length-1);st.t0=performance.now()/1000;st.seen.add(st.i);v={};
+    clear(back);clear(dyn);clear(top);back.style.opacity=1;
+    clouds.forEach((c,k)=>{c.g.style.display=(st.i===0||k===2)?'':'none';c.g.style.opacity=1;c.g.removeAttribute('transform');});
+    zero.style.display=st.i>=1?'':'none';zero.style.opacity=1;
+    upG.style.opacity=1;downG.style.display=st.i>=4?'':'none';sc.heat.style.display=st.i===0?'':'none';
+    STEPS[st.i].enter();
+    $('#s1badge').textContent=`${st.i+1}단계 · ${STEPS[st.i].title}`;
+    $('#s1cap').innerHTML=`<b>${st.i+1}단계</b> ${STEPS[st.i].cap}`;
+    dots.forEach((d,k)=>{d.classList.toggle('on',k===st.i);d.classList.toggle('seen',st.seen.has(k));d.setAttribute('aria-current',k===st.i?'step':'false');});
+    $('#s1prev').disabled=st.i===0;$('#s1next').disabled=st.i===STEPS.length-1;
+    tick(performance.now()/1000);
+  }
+  function stopAuto(){st.auto=false;$('#s1auto').textContent='▶ 자동 재생';}
+  $('#s1prev').addEventListener('click',()=>{stopAuto();go(st.i-1);});
+  $('#s1next').addEventListener('click',()=>{stopAuto();go(st.i+1);});
+  $('#s1reset').addEventListener('click',()=>{stopAuto();go(0);});
+  $('#s1auto').addEventListener('click',()=>{if(st.auto){stopAuto();return;}st.auto=true;$('#s1auto').textContent='⏸ 멈춤';if(st.i===STEPS.length-1)go(0);else go(st.i);});
+  let flowPos=0,lastT=0;
+  function tick(T){
+    const s=STEPS[st.i],t=RM?s.dur+1:T-st.t0;
+    s.tick(t,T);
+    if(!RM){flowPos+=clamp(T-lastT,0,.05)*38;const off=(-flowPos%28).toFixed(1);flows.forEach(f=>f.setAttribute('stroke-dashoffset',off));}
+    lastT=T;
+    if(st.auto&&T-st.t0>s.dur+3.2){if(st.i<STEPS.length-1)go(st.i+1);else stopAuto();}
+  }
+  return{enter(){go(st.i);},tick,go,key(k){if(k==='ArrowRight'){stopAuto();go(st.i+1);}if(k==='ArrowLeft'){stopAuto();go(st.i-1);}}};
 })();
 
-/* 부드러운 원형 블롭 (필터 없이 소프트 셰이딩) */
-function softCircle(c, x, y, r, rgb, alpha){
-  const g = c.createRadialGradient(x, y, r*.1, x, y, r);
-  g.addColorStop(0, 'rgba(' + rgb + ',' + alpha + ')');
-  g.addColorStop(1, 'rgba(' + rgb + ',0)');
-  c.fillStyle = g;
-  c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
-}
+/* ================= 2탭: 우박 만들기 체험 ================= */
+const S2=(()=>{
+  const svg=$('#s2svg'),sc=baseScene(svg,{sunX:902,sunY:80,sunR:26});
+  const cloud=drawCloud(sc.cloudL,sc.defs,CB);
+  const zone=el('g',{'clip-path':`url(#${cloud.clip})`},svg);
+  el('rect',{x:0,y:YTOP,width:960,height:Y0-YTOP,fill:'#5B9BD5','fill-opacity':.16},zone);
+  el('line',{x1:0,y1:YTOP,x2:960,y2:YTOP,stroke:BLUE,'stroke-width':2.5,'stroke-dasharray':'8 7'},zone);
+  el('line',{x1:0,y1:Y0,x2:960,y2:Y0,stroke:INK,'stroke-width':3,'stroke-dasharray':'14 10'},svg);
+  // 왼쪽 온도 막대
+  const rl=el('g',{},svg),rx=30;
+  el('rect',{x:rx,y:96,width:16,height:34,fill:'#E6EDF3'},rl);el('rect',{x:rx,y:YTOP,width:16,height:Y0-YTOP,fill:'#8FC4EA'},rl);el('rect',{x:rx,y:Y0,width:16,height:372-Y0,fill:'#F5C4B3'},rl);
+  el('rect',{x:rx,y:96,width:16,height:276,rx:8,fill:'none',stroke:INK,'stroke-width':3},rl);
+  [[YTOP,'-40 ℃'],[Y0,'0 ℃']].forEach(a=>{el('line',{x1:rx+16,y1:a[0],x2:rx+24,y2:a[0],stroke:INK,'stroke-width':3},rl);tag(rl,rx+26,a[0],a[1],{fs:15,anchor:'start'});});
+  text(rl,rx+24,113,'물방울 없음',{'font-size':13,'font-family':"'Noto Sans KR',sans-serif",fill:'#4A5763'});
+  text(rl,rx+24,176,'과냉각 물방울',{'font-size':14,fill:'#2A5F9E'});text(rl,rx+24,195,'→ 우박이 자라요',{'font-size':14,fill:'#2A5F9E'});
+  text(rl,rx+24,296,'0 ℃보다 따뜻',{'font-size':14,fill:'#B8321F'});text(rl,rx+24,315,'→ 녹아요',{'font-size':14,fill:'#B8321F'});
+  const arrG=el('g',{},svg),downG=el('g',{opacity:.55},arrG),upG=el('g',{},arrG),flows=[];
+  DOWN_PATHS.forEach(d=>flows.push(arrow(downG,d,BLUE,{w:5}).flow));
+  let ups=[];
+  const dropG=el('g',{},svg),trailG=el('g',{},svg),pG=el('g',{},svg),fG=el('g',{},svg);
+  const trail=el('polyline',{fill:'none',stroke:CYAN,'stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round','stroke-opacity':.85},trailG);
 
-/* 정적 배경(하늘·언덕·구름·0℃선·라벨)은 한 번만 그려 둔다 */
-const bg = document.createElement('canvas');
-bg.width = W*2; bg.height = H*2;
-function renderBackground(){
-  const b = bg.getContext('2d');
-  b.setTransform(2,0,0,2,0,0);
-  b.clearRect(0,0,W,H);
-  // 하늘
-  const sky = b.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#A8D8F2'); sky.addColorStop(.75,'#D8EEFA'); sky.addColorStop(1,'#E8F5FC');
-  b.fillStyle = sky; b.fillRect(0,0,W,H);
-  // 지면 — 동글동글한 언덕
-  const g = b.createLinearGradient(0,GROUND_Y,0,H);
-  g.addColorStop(0,'#8CC46C'); g.addColorStop(1,'#5E9A45');
-  b.fillStyle = g; b.fillRect(0,GROUND_Y,W,H-GROUND_Y);
-  b.fillStyle = '#9BCE7B';
-  b.beginPath(); b.ellipse(190, GROUND_Y+52, 260, 58, 0, Math.PI, 0); b.fill();
-  b.fillStyle = '#7DB95E';
-  b.beginPath(); b.ellipse(700, GROUND_Y+60, 300, 62, 0, Math.PI, 0); b.fill();
-  for (const [fx,fy] of [[120,600],[250,614],[560,610],[820,602]]){
-    b.fillStyle = '#FFFFFF';
-    for (let k=0;k<5;k++){
-      const a = k/5*Math.PI*2;
-      b.beginPath(); b.arc(fx+Math.cos(a)*4.2, fy+Math.sin(a)*4.2, 2.6, 0, 7); b.fill();
-    }
-    b.fillStyle = '#F2C14E';
-    b.beginPath(); b.arc(fx, fy, 2.6, 0, 7); b.fill();
+  const LV={weak:{U:45,w:4},mid:{U:105,w:6.5},strong:{U:165,w:9}};
+  const SPEED=.6,G=.16,MELT=.1,YCEIL=100,FULL=175;
+  const VT=d=>58*Math.pow(Math.max(d,0),.7), rad=d=>d>0?3.5+d*4.6:5;
+  let lv='mid',U=LV.mid.U,st='idle',holding=false,heavy=false,u=0,x=400,y=Y0-14,D=.2,layers=[],cycles=0,dir=1,ext=0,pts=[],ptT=0,landT=0,flowPos=0,capKey='';
+  const R=rng(5),drops=[];
+  for(let i=0;i<34;i++)drops.push({x:312+R()*276,y:YTOP+4+R()*(Y0-YTOP-8),e:el('circle',{r:3.4,fill:DROP,stroke:INK,'stroke-width':1.5},dropG)});
+
+  function buildUps(){clear(upG);ups=UP_PATHS.map(d=>arrow(upG,d,RED,{w:LV[lv].w}));tag(upG,118,356,'상승 기류',{fill:'#FBE5E2'});$('#s2capU').style.left=(U/FULL*100)+'%';}
+  function reset(){
+    st='idle';heavy=false;u=0;x=400;y=Y0-14;layers=[{t:'seed',d:.2}];D=.2;cycles=0;dir=1;ext=y;pts=[];landT=0;
+    $('#s2pop').className='pop';trail.setAttribute('points','');
+    document.querySelectorAll('#s2lv button').forEach(b=>b.disabled=false);$('#s2start').disabled=false;
+    draw();hud();
   }
-  // 구름 본체 — 뭉게 실루엣을 통짜로 채우기 (위 밝고 아래 어둑한 비구름 밑면)
-  const cloudPath = new Path2D();
-  for (const p of puffs){ cloudPath.moveTo(p.x + p.r, p.y); cloudPath.arc(p.x, p.y, p.r, 0, Math.PI*2); }
-  const cg = b.createLinearGradient(0, 50, 0, CLOUD_BASE + 40);
-  cg.addColorStop(0, '#FFFFFF');
-  cg.addColorStop(.55, '#F3F9FD');
-  cg.addColorStop(.85, '#DCE9F2');
-  cg.addColorStop(1, '#C2D6E5');
-  b.fillStyle = cg; b.fill(cloudPath);
-  // 음영과 하이라이트는 실루엣 안쪽에만 (가장자리는 또렷한 뭉게 모양 유지)
-  b.save();
-  b.clip(cloudPath);
-  for (const p of puffs){
-    if (p.y < 380) continue;
-    softCircle(b, p.x, p.y + p.r*.4, p.r*.92, '118,150,182', .22);
+  function start(){reset();st='play';document.querySelectorAll('#s2lv button').forEach(b=>b.disabled=true);$('#s2start').disabled=true;}
+  function grow(dd,t){
+    const L=layers[layers.length-1],prev=layers.length>1?layers[layers.length-2].d:0;
+    if(L.t===t)L.d+=dd;else if(L.t!=='seed'&&L.d-prev<.06){L.t=t;L.d+=dd;}else layers.push({t,d:L.d+dd});
+    D=layers[layers.length-1].d;
   }
-  for (const p of puffs){
-    if (p.y > 340) continue;
-    softCircle(b, p.x - p.r*.12, p.y - p.r*.28, p.r*.9, '255,255,255', .9);
+  function melt(dd){
+    let L=layers[layers.length-1];L.d-=dd;
+    while(layers.length>1&&L.d<=layers[layers.length-2].d){layers.pop();L=layers[layers.length-1];}
+    if(L.d<0)L.d=0;D=L.d;
   }
-  b.restore();
-  // 0 ℃ 점선 (구름 위로)
-  b.strokeStyle = '#13324B'; b.lineWidth = 2.5;
-  b.setLineDash([9,8]);
-  b.beginPath(); b.moveTo(150, ZERO_Y); b.lineTo(760, ZERO_Y); b.stroke();
-  b.setLineDash([]);
-  labelPill(b, 791, ZERO_Y+1, '0 ℃', '#13324B');
-  labelPill(b, 120, 520, '상승 기류', '#D9432B');
-  labelPill(b, 760, 520, '하강 기류', '#2C66C9');
-}
-renderBackground();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderBackground);
-
-/* 차가운 물방울 */
-const DROP_X0 = 265, DROP_X1 = 625, DROP_Y0 = 150, DROP_Y1 = 465;
-function makeDroplets(n){
-  const r = rng(7);
-  const arr = [];
-  for (let i=0;i<n;i++) arr.push(spawnDroplet(r, {}));
-  return arr;
-}
-function spawnDroplet(r, d){
-  d.x = lerp(DROP_X0, DROP_X1, r());
-  d.y = lerp(DROP_Y0, DROP_Y1, r());
-  d.r = 4 + r()*3;
-  d.phase = r()*Math.PI*2;
-  d.gone = 0;            // 0 = 활성, >0 = 재생성까지 남은 시간(s)
-  return d;
-}
-const dropRng = rng(99);
-const droplets = makeDroplets(34);
-
-/* 기류 화살표 (곡선 + 움직이는 점선) */
-const upStreams = [
-  {x0:118,y0:576, cx:88, cy:370, x1:205,y1:185},
-  {x0:186,y0:580, cx:158,cy:430, x1:258,y1:262},
-  {x0:322,y0:602, cx:330,cy:545, x1:340,y1:482},
-  {x0:424,y0:606, cx:428,cy:552, x1:430,y1:492},
-];
-const downStreams = [
-  {x0:706,y0:198, cx:762,cy:380, x1:722,y1:566},
-  {x0:648,y0:270, cx:688,cy:420, x1:668,y1:560},
-];
-let dashOff = 0;
-
-function drawStream(s, color, head){
-  ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.lineCap = 'round';
-  ctx.setLineDash([14,12]);
-  ctx.lineDashOffset = head==='up' ? dashOff : -dashOff;
-  ctx.beginPath();
-  ctx.moveTo(s.x0, s.y0);
-  ctx.quadraticCurveTo(s.cx, s.cy, s.x1, s.y1);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  // 화살촉
-  const dx = s.x1 - s.cx, dy = s.y1 - s.cy;
-  const a = Math.atan2(dy, dx);
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(s.x1 + Math.cos(a)*13, s.y1 + Math.sin(a)*13);
-  ctx.lineTo(s.x1 + Math.cos(a+2.5)*11, s.y1 + Math.sin(a+2.5)*11);
-  ctx.lineTo(s.x1 + Math.cos(a-2.5)*11, s.y1 + Math.sin(a-2.5)*11);
-  ctx.closePath(); ctx.fill();
-}
-
-function labelPill(c, x, y, text, color){
-  c.font = '19px Jua, sans-serif';
-  const w = c.measureText(text).width + 22;
-  c.fillStyle = 'rgba(255,255,255,.88)';
-  roundRect(c, x - w/2, y - 16, w, 31, 15); c.fill();
-  c.fillStyle = color;
-  c.textAlign = 'center'; c.textBaseline = 'middle';
-  c.fillText(text, x, y + 1);
-}
-function roundRect(c,x,y,w,h,r){
-  c.beginPath();
-  c.moveTo(x+r,y);
-  c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
-  c.arcTo(x,y+h,x,y,r);     c.arcTo(x,y,x+w,y,r);
-  c.closePath();
-}
-
-let nowSec = 0;
-function drawScene(opt){
-  ctx.drawImage(bg, 0, 0, W, H);
-
-  // 기류 (구름 위로 그려 잘 보이게)
-  const upA = opt.upStrength;          // 0~1
-  ctx.globalAlpha = .35 + .65*upA;
-  for (const s of upStreams) drawStream(s, '#D9432B', 'up');
-  ctx.globalAlpha = .8;
-  for (const s of downStreams) drawStream(s, '#2C66C9', 'down');
-  ctx.globalAlpha = 1;
-
-  // 물방울
-  for (const d of droplets){
-    if (d.gone > 0) continue;
-    const bob = Math.sin(nowSec*1.4 + d.phase)*3;
-    const drift = opt.dropletDrift ? Math.sin(nowSec*.5 + d.phase)*4 : 0;
-    const dg = ctx.createRadialGradient(d.x+drift - d.r*.3, d.y+bob - d.r*.35, d.r*.15, d.x+drift, d.y+bob, d.r);
-    dg.addColorStop(0, '#8FC2F2'); dg.addColorStop(1, '#2F72C8');
-    ctx.fillStyle = dg;
-    ctx.beginPath();
-    ctx.ellipse(d.x + drift, d.y + bob, d.r*.92, d.r, 0, 0, 7);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,.85)';
-    ctx.beginPath(); ctx.ellipse(d.x + drift - d.r*.32, d.y + bob - d.r*.38, d.r*.28, d.r*.2, -.5, 0, 7); ctx.fill();
+  function setHold(on){
+    if(on&&(st==='landed'||st==='fall'))return;
+    holding=on;$('#hold').classList.toggle('on',on);
+    $('#hold').textContent=on?'▲ 상승 기류 부는 중!':'▲ 꾹 누르면 상승 기류';
+    if(on&&st==='idle')start();
   }
-
-}
-
-/* 작은 얼음 결정 (눈꽃 모양) */
-function drawIceCrystal(x, y, r, rot){
-  ctx.save();
-  ctx.translate(x, y); ctx.rotate(rot || 0);
-  ctx.strokeStyle = '#5FA6D6'; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
-  for (let k=0;k<6;k++){
-    const a = k*Math.PI/3;
-    const ex = Math.cos(a)*r, ey = Math.sin(a)*r;
-    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(ex,ey); ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(ex*.62 + Math.cos(a+.9)*r*.28, ey*.62 + Math.sin(a+.9)*r*.28);
-    ctx.lineTo(ex*.62, ey*.62);
-    ctx.lineTo(ex*.62 + Math.cos(a-.9)*r*.28, ey*.62 + Math.sin(a-.9)*r*.28);
-    ctx.stroke();
-  }
-  ctx.fillStyle = '#EAF6FD';
-  ctx.beginPath(); ctx.arc(0, 0, r*.25, 0, 7); ctx.fill();
-  ctx.restore();
-}
-
-/* 우박/얼음 입자 그리기 — d(mm) → 화면 반지름. mood: smile | yay | worry | wow */
-function radiusPx(d){ return clamp(3 + d*.17, 3, 32); }
-function drawHail(x, y, d, layers, mood){
-  const r = radiusPx(d);
-  ctx.save();
-  ctx.translate(x, y);
-  // 윤기 나는 얼음 몸통
-  const grad = ctx.createRadialGradient(-r*.3, -r*.35, r*.12, 0, 0, r);
-  grad.addColorStop(0, '#FFFFFF');
-  grad.addColorStop(.65, '#EEF7FC');
-  grad.addColorStop(1, '#C6E0F0');
-  ctx.fillStyle = grad;
-  ctx.strokeStyle = '#8FBCD9'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill(); ctx.stroke();
-  const n = Math.min(layers, 7);
-  ctx.strokeStyle = 'rgba(127,180,212,.55)'; ctx.lineWidth = 1.3;
-  for (let i=1;i<=n;i++){
-    ctx.beginPath(); ctx.arc(0, 0, r*i/(n+1), 0, 7); ctx.stroke();
-  }
-  // 반짝 하이라이트
-  ctx.fillStyle = 'rgba(255,255,255,.92)';
-  ctx.beginPath(); ctx.ellipse(-r*.36, -r*.4, r*.2, r*.13, -.6, 0, 7); ctx.fill();
-
-  // 표정 (충분히 클 때만)
-  if (mood && r >= 8){
-    const ink = '#2A4A63';
-    const eyeY = -r*.06, eyeX = r*.3, eyeR = Math.max(r*.085, 1.6);
-    const blink = Math.sin(nowSec*2.1 + x*.013) > .975;
-    ctx.strokeStyle = ink; ctx.fillStyle = ink;
-    ctx.lineWidth = Math.max(r*.07, 1.4); ctx.lineCap = 'round';
-    if (mood === 'yay'){                    // ^ ^ 눈
-      for (const s of [-1,1]){
-        ctx.beginPath();
-        ctx.arc(s*eyeX, eyeY + eyeR, eyeR*1.5, Math.PI*1.15, Math.PI*1.85);
-        ctx.stroke();
-      }
-    } else if (blink){
-      for (const s of [-1,1]){
-        ctx.beginPath();
-        ctx.moveTo(s*eyeX - eyeR, eyeY); ctx.lineTo(s*eyeX + eyeR, eyeY);
-        ctx.stroke();
-      }
-    } else {
-      for (const s of [-1,1]){
-        ctx.beginPath(); ctx.arc(s*eyeX, eyeY, eyeR, 0, 7); ctx.fill();
-      }
-    }
-    // 볼터치
-    ctx.fillStyle = 'rgba(244,150,150,.45)';
-    for (const s of [-1,1]){
-      ctx.beginPath(); ctx.arc(s*r*.5, r*.16, eyeR*1.1, 0, 7); ctx.fill();
-    }
-    // 입
-    ctx.strokeStyle = ink; ctx.fillStyle = ink;
-    const mouthY = r*.3;
-    if (mood === 'worry'){
-      ctx.beginPath(); ctx.arc(0, mouthY + r*.16, r*.16, Math.PI*1.15, Math.PI*1.85); ctx.stroke();
-    } else if (mood === 'wow'){
-      ctx.beginPath(); ctx.arc(0, mouthY, Math.max(r*.11, 1.8), 0, 7); ctx.fill();
-    } else if (mood === 'yay'){
-      ctx.beginPath(); ctx.arc(0, mouthY - r*.08, r*.2, .25, Math.PI - .25); ctx.stroke();
-    } else {                                // smile
-      ctx.beginPath(); ctx.arc(0, mouthY - r*.06, r*.14, .3, Math.PI - .3); ctx.stroke();
+  function draw(){
+    clear(pG);clear(fG);
+    if(st==='idle')return;
+    if(D<=0){raindrop(pG,x,y,1.3);return;}
+    el('circle',{cx:x,cy:y,r:rad(D)+5,fill:'none',stroke:'#FFD54A','stroke-width':3.5},pG);
+    for(let i=layers.length-1;i>=0;i--){const L=layers[i],o=i===layers.length-1;el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:rad(L.d).toFixed(1),fill:L.t==='clear'?'#CFEAF8':'#fff',stroke:INK,'stroke-width':o?2.5:1,'stroke-opacity':o?1:.45},pG);}
+    if(st==='play'){
+      const r=rad(D),lu=Math.min(56,u*.32),lw=Math.min(56,VT(D)*.32);
+      if(lu>8)vArrow(fG,x-r-12,y+8,y+8-lu,RED);
+      if(lw>8)vArrow(fG,x+r+12,y-8,y-8+lw,BLUE);
     }
   }
-  ctx.restore();
-}
-
-/* 단면 그리기 (미리 보기 인셋 + 결과 화면 공용) */
-function drawCrossSection(c2, cx, cy, R, layers){
-  const n = clamp(layers, 0, 12);
-  c2.save();
-  c2.beginPath(); c2.arc(cx, cy, R, 0, 7);
-  c2.fillStyle = '#BEE0F2'; c2.fill();
-  for (let i=n;i>=1;i--){
-    const rr = R * i/(n+1);
-    c2.beginPath(); c2.arc(cx, cy, rr, 0, 7);
-    c2.fillStyle = (n-i)%2===0 ? '#F4FAFD' : '#BEE0F2';
-    c2.fill();
-    c2.strokeStyle = '#8FBCD9'; c2.lineWidth = 1.2; c2.stroke();
+  function hud(){
+    $('#s2size').textContent=D.toFixed(1);$('#s2cyc').textContent=cycles;$('#s2lay').textContent=D>0?layers.length:0;
+    $('#s2barU').style.width=clamp(u/FULL*100,0,100)+'%';$('#s2barW').style.width=clamp(VT(D)/FULL*100,0,100)+'%';
   }
-  c2.beginPath(); c2.arc(cx, cy, Math.max(R/(n+1)*.55, 4), 0, 7);
-  c2.fillStyle = '#E3F2FB'; c2.fill();
-  c2.strokeStyle = '#7FB4D4'; c2.stroke();
-  c2.beginPath(); c2.arc(cx, cy, R, 0, 7);
-  c2.strokeStyle = '#5E97BC'; c2.lineWidth = 2.5; c2.stroke();
-  c2.restore();
-}
+  const CAPS={
+    idle:'<b>▶ 시작</b>을 누르거나 <b>상승 기류 버튼을 꾹</b> 누르면 얼음 알갱이가 나타나요.',
+    grow:'<b>과냉각 물방울</b>이 얼어붙고 있어요! 이 구역에 오래 머물수록 쑥쑥 커져요.',
+    cold:'너무 높아요! <b>-40 ℃</b>보다 차가운 곳엔 물방울이 없어서 자라지 않아요.',
+    melt:'<b>0 ℃</b> 아래로 내려왔어요. 얼음이 <b>녹고 있어요</b>! 다시 꾹 눌러요.',
+    heavy:'너무 무거워져서 <b>상승 기류가 떠받치지 못해요</b>. 떨어져요!',
+    fall:'구름 밖으로 떨어지는 중… 따뜻한 공기 속에서 조금씩 녹아요.',
+    done:'결과를 확인해요. <b>상승 기류 세기</b>를 바꿔서 다시 해 보세요!'
+  };
+  function caption(){
+    let k='idle';
+    if(st==='play')k=heavy?'heavy':y<YTOP?'cold':y<=Y0?'grow':'melt';
+    else if(st==='fall')k='fall';else if(st==='landed')k='done';
+    if(k!==capKey){capKey=k;$('#s2cap').innerHTML=`<span>${CAPS[k]}</span>`;}
+  }
+  function sizeName(d){return d<1?'콩알':d<2?'구슬':d<3?'방울토마토':d<4.3?'탁구공':'달걀';}
+  function readBest(){try{return parseFloat(localStorage.getItem('hail-lab-best'))||0;}catch(e){return 0;}}
+  function writeBest(v){try{localStorage.setItem('hail-lab-best',String(v));}catch(e){}}
+  function result(){
+    const pop=$('#s2pop'),svgP=$('#popSvg');clear(svgP);
+    const nL=layers.length;let cls,title,main,tip;
+    if(D<.1){
+      cls='bad';title='녹아서 비가 되었어요';main='얼음 알갱이가 떨어지는 동안 다 녹아 빗방울이 되었어요.';
+      tip=lv==='weak'?'상승 기류가 약하면 알갱이가 크게 자라지 못하고 금방 떨어져 녹아요. 더 강한 상승 기류로 해 보세요!':'작을 때 떨어지면 따뜻한 공기 속에서 다 녹아요. 과냉각 물방울 구역에서 더 오래 키워 보세요!';
+      raindrop(svgP,60,64,4.4);
+    }else if(D<.5){
+      cls='warn';title='작은 얼음 알갱이';main=`지름 ${D.toFixed(1)} cm — 우박이라고 부르려면 지름 5 mm(0.5 cm) 이상이어야 해요.`;
+      tip=lv==='weak'?'약한 상승 기류로는 무거운 얼음을 오래 떠받칠 수 없어요. 상승 기류를 더 세게 골라 보세요!':'과냉각 물방울 구역에서 오르내리며 더 오래 키워 보세요!';
+    }else{
+      cls='good';title='우박 완성!';main=`지름 ${D.toFixed(1)} cm · ${sizeName(D)}만 해요`;
+      tip=`상승과 하강을 ${cycles}번 반복해서 얼음층이 ${nL}겹 생겼어요. `+(lv==='strong'?'강한 상승 기류가 무거운 우박을 오래 떠받쳐 주었어요.':'상승 기류를 더 강하게 하면 더 큰 우박도 만들 수 있어요!');
+    }
+    if(D>=.1){const s=52/Math.max(D,.01);crossSection(svgP,60,60,layers.map(L=>Math.max(1.5,L.d*s)),layers.map(L=>L.t==='clear'?'clear':'white'),{ow:3,bubbles:true});}
+    const best=readBest(),isNew=D>=.5&&D>best+1e-9;if(isNew)writeBest(D);
+    $('#popTitle').textContent=title;$('#popMain').textContent=main;$('#popTip').textContent=tip;
+    const b=Math.max(best,D>=.5?D:0);$('#popBest').textContent=b>0?`최고 기록: 지름 ${b.toFixed(1)} cm`+(isNew?' (새 기록!)':''):'';
+    pop.className='pop show '+cls;
+    document.querySelectorAll('#s2lv button').forEach(bt=>bt.disabled=false);$('#s2start').disabled=false;
+  }
+  function tick(dt){
+    if(st==='play'){
+      if(VT(D)>=U)heavy=true; // 상승 기류가 더 이상 떠받치지 못함 → 계속 떨어짐
+      u+=((holding&&!heavy?U:0)-u)*Math.min(1,dt*5);
+      let vy=(Math.max(VT(D),18)-u)*SPEED;
+      y+=vy*dt;if(y<YCEIL){y=YCEIL;vy=0;}
+      x=clamp(x+(vy>0?10:-8)*dt,360,540);
+      if(y>=YTOP&&y<=Y0)grow(G*dt,y<YMID?'white':'clear');else if(y>Y0)melt(MELT/(.4+D)*dt);
+      if(dir<0){if(y<ext)ext=y;else if(y-ext>18){dir=1;ext=y;cycles++;}}
+      else{if(y>ext)ext=y;else if(ext-y>18){dir=-1;ext=y;}}
+      if(y>BASE||D<=0)st='fall';
+    }else if(st==='fall'){
+      u+=(0-u)*Math.min(1,dt*5);
+      y+=Math.max(VT(D),50)*SPEED*1.7*dt;x+=16*dt;
+      if(D>0)melt(MELT/(.4+D)*dt);
+      if(y+rad(D)>=GROUND){y=GROUND-rad(D);st='landed';landT=0;}
+    }else if(st==='landed'){
+      const was=landT;landT+=dt;
+      if(was<.7&&landT>=.7)result();
+      u+=(0-u)*Math.min(1,dt*5);
+    }else u+=(0-u)*Math.min(1,dt*5);
+    // 궤적
+    if(st==='play'||st==='fall'){ptT+=dt;if(ptT>.05){ptT=0;pts.push(x.toFixed(1)+','+y.toFixed(1));if(pts.length>400)pts.shift();trail.setAttribute('points',pts.join(' '));}}
+    // 물방울 (상승 기류를 타고 올라감)
+    const inZone=st==='play'&&y>=YTOP&&y<=Y0,rr=rad(D)+5;
+    for(const d of drops){
+      if(!RM)d.y-=(6+u*.16)*dt;
+      if(d.y<YTOP+3){d.y=Y0-3;d.x=312+Math.random()*276;}
+      if(inZone&&Math.hypot(d.x-x,d.y-y)<rr){d.y=Y0-3;d.x=312+Math.random()*276;}
+      d.e.setAttribute('cx',d.x.toFixed(1));d.e.setAttribute('cy',d.y.toFixed(1));
+    }
+    const k=.5+.5*clamp(u/U,0,1);ups.forEach(a=>a.g.setAttribute('opacity',k.toFixed(2)));
+    if(!RM){flowPos+=(14+u*.5)*dt;const off=(-flowPos%28).toFixed(1);ups.forEach(a=>a.flow.setAttribute('stroke-dashoffset',off));flows.forEach(f=>f.setAttribute('stroke-dashoffset',(-(flowPos*.6)%28).toFixed(1)));}
+    let yy=y;if(st==='landed'&&landT<.7)yy=y-Math.abs(Math.sin(landT/.35*Math.PI))*10*(1-landT/.7);
+    const sy=y;y=yy;draw();y=sy;
+    hud();caption();
+  }
+  document.querySelectorAll('#s2lv button').forEach(b=>b.addEventListener('click',()=>{
+    if(st==='play'||st==='fall')return;
+    lv=b.dataset.lv;U=LV[lv].U;document.querySelectorAll('#s2lv button').forEach(x=>x.classList.toggle('sel',x===b));buildUps();reset();
+  }));
+  const hb=$('#hold');
+  hb.addEventListener('pointerdown',e=>{e.preventDefault();try{hb.setPointerCapture(e.pointerId);}catch(_){}setHold(true);});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>hb.addEventListener(ev,()=>setHold(false)));
+  hb.addEventListener('contextmenu',e=>e.preventDefault());
+  const sw=$('#stage2 .stage-wrap');
+  sw.addEventListener('pointerdown',e=>{e.preventDefault();try{sw.setPointerCapture(e.pointerId);}catch(_){}setHold(true);});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>sw.addEventListener(ev,()=>setHold(false)));
+  sw.addEventListener('contextmenu',e=>e.preventDefault());
+  $('#s2start').addEventListener('click',start);
+  $('#s2reset').addEventListener('click',()=>{setHold(false);reset();});
+  $('#popAgain').addEventListener('click',()=>{reset();});
+  window.addEventListener('blur',()=>setHold(false));
+  buildUps();reset();
+  return{tick,release(){setHold(false);},hold:setHold,get state(){return st;}};
+})();
 
-/* 무대 위 단면 미리 보기 인셋(캔버스에 직접) */
-function drawInset(layers){
-  const x = 706, y = 22, w = 172, h = 186;
-  ctx.fillStyle = 'rgba(255,255,255,.93)';
-  roundRect(ctx, x, y, w, h, 12); ctx.fill();
-  ctx.strokeStyle = '#BFDCEE'; ctx.lineWidth = 2; roundRect(ctx, x, y, w, h, 12); ctx.stroke();
-  ctx.fillStyle = '#1B6FA8'; ctx.font = '17px Jua, sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-  ctx.fillText('단면 미리 보기', x + w/2, y + 26);
-  drawCrossSection(ctx, x + w/2, y + 96, 52, layers);
-  ctx.fillStyle = '#13324B'; ctx.font = '18px Jua, sans-serif';
-  ctx.fillText('얼음층 ' + layers + '겹', x + w/2, y + h - 14);
-}
+/* ================= 3탭: 계절 비교 ================= */
+const S3=(()=>{
+  const svg=$('#s3svg'),defs=el('defs',{},svg);
+  const sky=el('rect',{x:-10,y:-10,width:980,height:560,fill:SKY},svg);
+  const sunG=el('g',{},svg),heatG=el('g',{},svg),warmG=el('g',{},svg),groundG=el('g',{},svg),cloudG=el('g',{},svg),arrG=el('g',{},svg),zeroG=el('g',{},svg),partG=el('g',{},svg),pileG=el('g',{},svg),graphG=el('g',{},svg),gDyn=el('g',{},svg);
+  const GX=t=>780+t*3.5,GY=km=>400-km*34;
+  // 그래프 틀
+  el('rect',{x:598,y:20,width:348,height:420,rx:14,fill:'#fff',stroke:INK,'stroke-width':3},graphG);
+  text(graphG,780,45,'높이에 따른 기온',{'font-size':18,'text-anchor':'middle'});
+  for(let t=-40;t<=40;t+=20){el('line',{x1:GX(t),y1:GY(10),x2:GX(t),y2:GY(0),stroke:t===0?INK:'#D5DEE5','stroke-width':t===0?2.5:2,'stroke-dasharray':t===0?'6 5':''},graphG);text(graphG,GX(t),420,t===40?'40 ℃':String(t),{'font-size':14,'text-anchor':'middle','font-family':"'Noto Sans KR',sans-serif"});}
+  for(let k=0;k<=10;k+=2){el('line',{x1:GX(-40),y1:GY(k),x2:GX(40),y2:GY(k),stroke:k?'#E3EAF0':INK,'stroke-width':k?1.5:3},graphG);text(graphG,634,GY(k)+5,k===10?'10 km':String(k),{'font-size':13,'text-anchor':'end','font-family':"'Noto Sans KR',sans-serif"});}
+  const gclip='gc'+(++UID),gcp=el('clipPath',{id:gclip},defs);el('rect',{x:GX(-40),y:GY(10),width:GX(40)-GX(-40),height:GY(0)-GY(10)},gcp);
 
-/* ================================================================
-   시연 모드
-   ================================================================ */
-const DEMO_STEPS = [
-  { title:'우박의 씨앗',
-    desc:'적란운 속에는 작은 얼음 입자들이 떠 있어요. 이 작은 얼음 입자가 우박의 씨앗이 됩니다.',
-    dur:5000 },
-  { title:'물방울을 만나 성장',
-    desc:'작은 얼음 입자는 강한 상승 기류를 타고 올라가면서 차가운 물방울과 합쳐져 점점 커집니다.',
-    dur:7000 },
-  { title:'오르내리며 겹겹이 성장',
-    desc:'얼음 덩어리는 상승과 하강을 반복하면서 자랍니다. 오르내릴 때마다 얼음층이 한 겹씩 늘어나요.',
-    dur:9000 },
-  { title:'지상으로 떨어지면 — 우박!',
-    desc:'상승 기류가 지탱하지 못할 만큼 무거워지면 지상으로 떨어집니다. 이렇게 떨어진 얼음 덩어리가 바로 우박이에요!',
-    dur:6000 },
-];
-const demo = { step:0, t:0, playing:false, speed:1, plinkAt:0, thudDone:false };
+  const SEASONS={
+    early:{name:'초여름',mon:'6월',Ts:24,Tu:-14,cap:'<b>초여름</b>: 땅은 햇볕에 뜨거운데 상공은 아직 차가워요. <b>기온 차가 커서</b> 강한 상승 기류가 생기고, 0 ℃ 높이가 낮아 <b>우박이 녹기 전에</b> 땅에 닿아요.'},
+    mid:{name:'한여름',mon:'8월',Ts:32,Tu:-2,cap:'<b>한여름</b>: 상공까지 따뜻해 <b>0 ℃ 높이가 아주 높아요</b>. 구름 속 얼음이 떨어지는 동안 두꺼운 따뜻한 층을 지나며 <b>녹아서 비</b>가 돼요.'},
+    fall:{name:'가을',mon:'10월',Ts:18,Tu:-20,cap:'<b>가을</b>: 땅은 아직 따뜻한데 상공으로 <b>찬 공기</b>가 들어와요. 기온 차가 커서 <b>강한 상승 기류</b>가 생기고, 0 ℃ 높이도 낮아 <b>우박</b>이 내려요.'},
+    winter:{name:'겨울',mon:'1월',Ts:-1,Tu:-26,cap:'<b>겨울</b>: 땅이 차가워 공기가 잘 데워지지 않아요. 위아래 <b>기온 차가 작아</b> 상승 기류가 약하고 적란운이 자라지 못해 <b>눈</b>이 내려요.'},
+  };
+  const LOOK={
+    early:{sky:SKY,sun:23,sunC:'#FFD54A',ground:'#9DD16C',tree:'#5DAF4E'},
+    mid:{sky:SKY,sun:26,sunC:'#FFC93C',ground:'#6DB852',tree:'#3F8F3C'},
+    fall:{sky:SKY,sun:20,sunC:'#FFD54A',ground:'#E5B454',tree:'#E27B35'},
+    winter:{sky:'#D3E6F0',sun:16,sunC:'#FFE6A0',ground:'#F3F7FA',tree:null},
+  };
+  function atm(Ts,Tu){
+    const dT=Ts-Tu,lapse=dT/5;
+    const up=dT>=35?'강함':dT>=30?'보통':'약함',upIdx=clamp((dT-24)/16,0,1);
+    const H0=Ts<=0?0:(lapse>0?Ts/lapse:Infinity);
+    const top=clamp(2+(dT-22)*.5,2.6,10.4);
+    let Dmax=clamp((dT-28)*.36,0,6);if(!(top>H0+2))Dmax=0;
+    const loss=isFinite(H0)?.06*H0*Math.max(0,Ts)/2:99,Dg=Math.max(0,Dmax-loss);
+    const kind=Dmax>0?(Dg>=.5?'hail':Dg>.05?'graupel':'rain'):(Ts<=1?'snow':'none');
+    return{Ts,Tu,dT,up,upIdx,H0,top,Dmax,loss,Dg,kind};
+  }
+  const h0txt=a=>a.H0===0?'지표':isFinite(a.H0)&&a.H0<=10?a.H0.toFixed(1)+' km':'10 km 넘음';
+  const kindTxt=a=>({hail:`우박 ${a.Dg.toFixed(1)} cm`,graupel:'작은 얼음',rain:'비 (녹음)',snow:'눈',none:'없음'})[a.kind];
+  const kindCls=a=>({hail:'good',graupel:'',rain:'bad',snow:'snow',none:''})[a.kind];
 
-function demoSetStep(i, keepPlaying){
-  demo.step = clamp(i, 0, 3);
-  demo.t = 0;
-  demo.thudDone = false;
-  if (!keepPlaying) {} // t만 리셋
-  $('stepNum').textContent = demo.step + 1;
-  $('stepTitle').textContent = DEMO_STEPS[demo.step].title;
-  $('stepDesc').textContent = DEMO_STEPS[demo.step].desc;
-  [...$('stepDots').children].forEach((el,k)=>el.classList.toggle('on', k===demo.step));
-  $('btnPrev').disabled = demo.step===0;
-  $('btnNext').disabled = demo.step===3;
-}
-function demoSetPlaying(p){
-  demo.playing = p;
-  $('btnPlay').textContent = p ? '⏸ 멈춤' : '▶ 재생';
-  if (p) Sound.ensure();
-}
-$('btnPrev').addEventListener('click', ()=>demoSetStep(demo.step-1));
-$('btnNext').addEventListener('click', ()=>demoSetStep(demo.step+1));
-$('btnPlay').addEventListener('click', ()=>{
-  if (!demo.playing && demo.step===3 && demo.t>=1) demoSetStep(0);
-  demoSetPlaying(!demo.playing);
+  let cur=null,sel='early',disp=null,look='',pile=[],lastPh=[],popT=0,visited=new Set();
+  const N=9,PR=rng(99),PP=Array.from({length:N},(_,i)=>({x:208+PR()*118,ph:(i+PR()*.6)/N,sw:PR()*6.28}));
+
+  function buildLook(key){
+    if(key===look)return;look=key;const L=LOOK[key];
+    sky.setAttribute('fill',L.sky);clear(sunG);drawSun(sunG,562,124,L.sun,L.sunC);
+    clear(groundG);drawGround(groundG,L.ground);
+    [[60,1],[140,.85],[470,.9],[540,1]].forEach(a=>drawTree(groundG,a[0],402,L.tree,a[1]));
+    if(key==='winter')[[60,1],[140,.85],[470,.9],[540,1]].forEach(a=>el('ellipse',{cx:a[0],cy:402-2,rx:16*a[1],ry:4,fill:'#fff',stroke:INK,'stroke-width':2},groundG));
+  }
+  function buildCloud(a){
+    clear(cloudG);clear(arrG);
+    const topY=GY(a.top),baseY=GY(1.2),hw=Math.round(78+a.upIdx*56),anvil=a.top>=7.5;
+    drawCloud(cloudG,defs,{cx:265,base:baseY,top:topY,hw,anvil,seed:17},a.Ts<=0?{mid:'#DCE3EA',shT:'#C8D2DC',shB:'#B3BFCA',hiB:'#E6ECF1'}:null);
+    popT=0;
+    if(a.upIdx>.03){
+      const w=3+a.upIdx*6,endY=Math.min(baseY-24,lerp(baseY-10,topY+80,a.upIdx));
+      arrow(arrG,`M22,398 C100,392 170,382 200,${baseY-6} S224,${(endY+baseY)/2} 228,${endY}`,RED,{w});
+      if(a.upIdx>.4)arrow(arrG,`M84,410 C150,404 220,392 252,${baseY-10} S276,${(endY+baseY)/2+10} 280,${endY+14}`,RED,{w});
+    }
+    const n=Math.round(clamp(a.Ts,0,36)/7);clear(heatG);
+    for(let i=0;i<n;i++)el('path',{d:squiggle(),fill:'none',stroke:'#E8553E','stroke-width':3.5,'stroke-linecap':'round','data-i':i},heatG);
+  }
+  function drawDyn(Ts,Tu){
+    const a=atm(Ts,Tu);
+    // 0 ℃ 선, 녹는 구간
+    clear(zeroG);clear(warmG);
+    if(a.H0>0&&a.H0<=10.2){
+      const y=GY(a.H0);
+      el('rect',{x:0,y,width:598,height:400-y,fill:'#FFD3BF','fill-opacity':.55},warmG);
+      el('line',{x1:0,y1:y,x2:GX(0),y2:y,stroke:INK,'stroke-width':3,'stroke-dasharray':'14 10'},zeroG);
+      tag(zeroG,40,y,'0 ℃',{fs:16});
+      if(a.H0>.5){const bx=520,g=el('g',{},zeroG);
+        el('line',{x1:bx,y1:y+9,x2:bx,y2:391,stroke:INK,'stroke-width':3},g);
+        el('polygon',{points:`${bx},${y+2} ${bx-7},${y+13} ${bx+7},${y+13}`,fill:INK},g);el('polygon',{points:`${bx},${398} ${bx-7},${387} ${bx+7},${387}`,fill:INK},g);
+        tag(g,bx,(y+398)/2,'녹는 구간',{fs:15,fill:'#FBE5E2'});}
+    }
+    // 그래프
+    clear(gDyn);
+    const lapse=(Ts-Tu)/5;
+    el('line',{x1:GX(Ts),y1:GY(0),x2:GX(Ts-lapse*10),y2:GY(10),stroke:INK,'stroke-width':4,'stroke-linecap':'round','clip-path':`url(#${gclip})`},gDyn);
+    const pS={x:GX(Ts),y:GY(0)},pU={x:GX(Tu),y:GY(5)};
+    if(a.H0>0&&a.H0<=10){const y=GY(a.H0);el('circle',{cx:GX(0),cy:y,r:7,fill:'#FFD54A',stroke:INK,'stroke-width':3},gDyn);tag(gDyn,GX(0)+14,y,`0 ℃ 높이 ${a.H0.toFixed(1)} km`,{fs:14,anchor:'start',fill:'#FFF4D6'});}
+    else if(a.H0===0)tag(gDyn,GX(0)+12,GY(1.7),'0 ℃ 높이: 땅보다 낮아요',{fs:13,anchor:'start',fill:'#FFF4D6'});
+    else tag(gDyn,GX(0)+10,GY(9.3),'0 ℃ 높이: 10 km 넘음',{fs:13,anchor:'start',fill:'#FFF4D6'});
+    el('circle',{cx:pS.x,cy:pS.y,r:8,fill:'#E8553E',stroke:INK,'stroke-width':3},gDyn);
+    el('circle',{cx:pU.x,cy:pU.y,r:8,fill:'#5B9BD5',stroke:INK,'stroke-width':3},gDyn);
+    tag(gDyn,pU.x-12,pU.y,`5 km ${Math.round(Tu)} ℃`,{fs:14,anchor:'end',fill:'#DDE9F7'});
+    const sx=pS.x>820;tag(gDyn,pS.x+(sx?-12:12),GY(.62),`지표 ${Math.round(Ts)} ℃`,{fs:14,anchor:sx?'end':'start',fill:'#FBE5E2'});
+    const dT=Math.round(Ts-Tu);tag(gDyn,872,82,`기온 차 ${dT} ℃`,{fs:15,fill:dT>=35?'#FBE5E2':dT>=30?'#FDF3DC':'#DDE9F7'});
+  }
+  function drawParts(T){
+    clear(partG);const a=cur;if(a.kind==='none')return;
+    const topY=GY(a.top),baseY=GY(1.2),y0=a.H0>0&&isFinite(a.H0)?GY(a.H0):400;
+    const ys=a.kind==='snow'?baseY-6:clamp(y0-50,topY+40,baseY-10);
+    for(let i=0;i<N;i++){
+      const q=PP[i],ph=RM?q.ph:(T/2.4+q.ph)%1,x=q.x+Math.sin(T*1.3+q.sw)*3;
+      const y=lerp(ys,396,Math.pow(ph,1.25));
+      if(!RM&&lastPh[i]!==undefined&&ph<lastPh[i]&&(a.kind==='hail'||a.kind==='graupel')&&pile.length<16)pile.push({x:x+(Math.random()-.5)*60,r:2+a.Dg*1.3});
+      lastPh[i]=ph;
+      if(a.kind==='snow'){flake(partG,x+Math.sin(T*2+i*1.7)*6,y,6);continue;}
+      const D=y<y0?a.Dmax:Math.max(0,a.Dmax-a.loss*(y-y0)/(400-y0));
+      if(D>.05)el('circle',{cx:x,cy:y,r:(2.2+D*1.5).toFixed(1),fill:'#fff',stroke:INK,'stroke-width':2},partG);
+      else raindrop(partG,x,y,.8);
+    }
+    clear(pileG);for(const p of pile)el('circle',{cx:p.x,cy:398-p.r*.6,r:p.r,fill:'#fff',stroke:INK,'stroke-width':2},pileG);
+  }
+  function renderTable(){
+    const tb=$('#s3rec');tb.innerHTML='';
+    for(const k in SEASONS){
+      const s=SEASONS[k],tr=document.createElement('tr');if(k===sel)tr.className='cur';
+      if(visited.has(k)){const a=atm(s.Ts,s.Tu);tr.innerHTML=`<td>${s.name}</td><td>${a.up}</td><td>${h0txt(a)}</td><td class="${kindCls(a)}">${kindTxt(a)}</td>`;}
+      else tr.innerHTML=`<td>${s.name}</td><td class="q">?</td><td class="q">?</td><td class="q">?</td>`;
+      tb.appendChild(tr);
+    }
+    const n=visited.size,note=$('#s3note');
+    if(n<4){note.className='note';note.innerHTML=`네 계절을 모두 눌러 비교해 보세요. <b>(${n}/4)</b>`;}
+    else{note.className='note done';note.innerHTML='<b>정리</b> 우박이 내리려면 ① 위아래 기온 차가 커서 <b>강한 상승 기류</b>가 생기고 ② <b>0 ℃ 높이가 낮아</b> 떨어지며 다 녹지 않아야 해요. <b>초여름·가을</b>이 딱 그래요!';}
+  }
+  function setTarget(Ts,Tu,key){
+    sel=key||null;cur=atm(Ts,Tu);pile=[];lastPh=[];
+    if(!disp)disp={Ts,Tu};
+    $('#tsR').value=Ts;$('#tuR').value=Tu;$('#tsO').textContent=Ts+' ℃';$('#tuO').textContent=Tu+' ℃';
+    document.querySelectorAll('#s3seg button').forEach(b=>b.classList.toggle('sel',b.dataset.s===key));
+    buildLook(key||(Ts<=0?'winter':Ts<16?'fall':Ts<=28?'early':'mid'));
+    buildCloud(cur);
+    if(key){visited.add(key);$('#s3badge').textContent=`${SEASONS[key].name} (${SEASONS[key].mon})`;$('#s3cap').innerHTML=`<span>${SEASONS[key].cap}</span>`;}
+    else{
+      $('#s3badge').textContent='직접 설정';const a=cur;
+      const res={hail:`<b>우박</b>(지름 약 ${a.Dg.toFixed(1)} cm)이 내려요!`,graupel:'작은 얼음 알갱이만 내려요.',rain:'얼음이 떨어지며 <b>녹아서 비</b>가 돼요.',snow:'<b>눈</b>이 내려요.',none:'적란운이 자라지 못해 <b>우박이 생기지 않아요</b>.'}[a.kind];
+      $('#s3cap').innerHTML=`<span>기온 차 <b>${Math.round(a.dT)} ℃</b> → 상승 기류 <b>${a.up}</b>, 0 ℃ 높이 <b>${h0txt(a)}</b> → ${res}</span>`;
+    }
+    renderTable();
+    if(RM){disp={Ts,Tu};drawDyn(Ts,Tu);}
+    dirty=true;
+  }
+  let dirty=true;
+  function tick(dt,T){
+    const tg={Ts:cur.Ts,Tu:cur.Tu};
+    if(Math.abs(disp.Ts-tg.Ts)>.02||Math.abs(disp.Tu-tg.Tu)>.02||dirty){
+      const k=RM?1:Math.min(1,dt*6);disp.Ts=lerp(disp.Ts,tg.Ts,k);disp.Tu=lerp(disp.Tu,tg.Tu,k);drawDyn(disp.Ts,disp.Tu);dirty=false;
+    }
+    if(popT<1&&!RM){popT=Math.min(1,popT+dt*2.5);const s=.9+.1*ease(popT),by=GY(1.2);cloudG.setAttribute('transform',`translate(265,${by}) scale(${s.toFixed(3)}) translate(-265,${-by})`);cloudG.setAttribute('opacity',ease(popT*1.4).toFixed(2));}
+    else{cloudG.removeAttribute('transform');cloudG.setAttribute('opacity',1);}
+    heatG.querySelectorAll('path').forEach((p,i)=>{const ph=RM?.3:(T*.55+i*.23)%1;p.setAttribute('transform',`translate(${40+i*44},${398-ph*44})`);p.setAttribute('opacity',(1-ph).toFixed(2));});
+    drawParts(RM?0:T);
+  }
+  document.querySelectorAll('#s3seg button').forEach(b=>b.addEventListener('click',()=>{const s=SEASONS[b.dataset.s];setTarget(s.Ts,s.Tu,b.dataset.s);}));
+  ['tsR','tuR'].forEach(id=>$('#'+id).addEventListener('input',()=>setTarget(+$('#tsR').value,+$('#tuR').value,null)));
+  setTarget(24,-14,'early');
+  return{tick};
+})();
+
+/* ================= 탭 전환 · 반복 ================= */
+let active=1;
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  const n=+t.dataset.tab;if(n===active)return;active=n;
+  document.querySelectorAll('.tab').forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);});
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel'+n));
+  if(n===1)S1.enter();if(n!==2)S2.release();
+}));
+document.addEventListener('keydown',e=>{
+  if(e.target&&(e.target.tagName==='INPUT'))return;
+  if(active===1&&(e.key==='ArrowRight'||e.key==='ArrowLeft'))S1.key(e.key);
+  if(active===2&&(e.code==='Space'||e.key===' ')){e.preventDefault();if(!e.repeat)S2.hold(true);}
 });
-document.querySelectorAll('.speed button').forEach(b=>{
-  b.addEventListener('click', ()=>{
-    demo.speed = parseFloat(b.dataset.speed);
-    document.querySelectorAll('.speed button').forEach(x=>x.classList.toggle('on', x===b));
-  });
-});
-
-function updateDemo(dt){
-  const stepDur = DEMO_STEPS[demo.step].dur / demo.speed / 1000;
-  demo.t += dt / stepDur;
-  if (demo.t >= 1){
-    if (demo.playing){
-      if (demo.step < 3) demoSetStep(demo.step+1, true);
-      else { demo.t = 1; demoSetPlaying(false); }
-    } else {
-      demo.t = 0; demo.thudDone = false;   // 멈춤 상태에서는 단계 안에서 반복
-    }
-  }
-  $('stepProg').style.width = (clamp(demo.t,0,1)*100).toFixed(1) + '%';
-  // 바람 소리: 상승 장면에서만 은은하게
-  const windy = (demo.step===1 || demo.step===2) ? .45 : (demo.step===3 ? .2 : .08);
-  Sound.setWind(windy);
+document.addEventListener('keyup',e=>{if(active===2&&(e.code==='Space'||e.key===' ')){e.preventDefault();S2.hold(false);}});
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;const T=now/1000;
+  if(active===1)S1.tick(T);else if(active===2)S2.tick(dt,T);else S3.tick(dt,T);
+  requestAnimationFrame(frame);
 }
-
-/* 시연 애니메이션 상태 계산 → {x,y,d,layers,label} */
-function demoParticle(){
-  const t = clamp(demo.t, 0, 1);
-  const s = demo.step;
-  if (s === 0){
-    return { seeds:true };
-  }
-  if (s === 1){
-    const y = lerp(455, 235, t);
-    const x = 430 + Math.sin(t*Math.PI*3)*46;
-    const d = lerp(2, 14, t);
-    // 물방울 흡수 효과음(재생 중일 때만, 일정 간격)
-    if (demo.playing && nowSec - demo.plinkAt > .8/demo.speed){ demo.plinkAt = nowSec; Sound.plink(d); }
-    return { x, y, d, layers:1 };
-  }
-  if (s === 2){
-    const cyc = 2.5;
-    const y = 295 - Math.sin(t*Math.PI*2*cyc)*135;
-    const x = 430 + Math.sin(t*Math.PI*2*cyc*.5)*55;
-    const d = lerp(14, 42, t);
-    const layers = 1 + Math.min(3, Math.floor(t*cyc*1.6));
-    if (demo.playing && nowSec - demo.plinkAt > 1.1/demo.speed){ demo.plinkAt = nowSec; Sound.plink(d); }
-    return { x, y, d, layers };
-  }
-  // s === 3 : 낙하
-  const tt = Math.min(t/.72, 1);
-  const y = lerp(295, GROUND_Y-14, tt*tt);
-  const x = lerp(470, 620, tt);
-  if (tt >= 1 && !demo.thudDone){ demo.thudDone = true; if (demo.playing) Sound.thud(46); }
-  return { x, y, d:46, layers:4, landed: tt>=1 };
-}
-
-function drawDemo(){
-  const upStrength = [.55, .95, .9, .35][demo.step];
-  drawScene({ upStrength, dropletDrift: demo.step>0 });
-
-  const p = demoParticle();
-  if (p.seeds){
-    // 작은 얼음 입자들 — 반짝이는 눈 결정 모양
-    const seedPos = [[360,430],[430,435],[500,428],[395,392],[468,395]];
-    seedPos.forEach(([sx,sy],i)=>{
-      const bob = Math.sin(nowSec*1.6+i)*4;
-      drawIceCrystal(sx, sy+bob, 7 + (i%2)*1.5, nowSec*.4 + i);
-    });
-    // 씨앗 강조 링
-    const pulse = 15 + Math.sin(nowSec*3)*4;
-    ctx.strokeStyle = '#D9432B'; ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.arc(430, 435+Math.sin(nowSec*1.6+1)*4, pulse, 0, 7); ctx.stroke();
-    labelPill(ctx, 430, 385, '작은 얼음 입자', '#13324B');
-  } else {
-    let mood = 'smile';
-    if (demo.step === 3) mood = p.landed ? 'yay' : 'wow';
-    else if (nowSec - demo.plinkAt < .45) mood = 'yay';
-    drawHail(p.x, p.y, p.d, p.layers, mood);
-    if (demo.step===3 && p.landed) labelPill(ctx, p.x, p.y-42, '우박!', '#D9432B');
-    if (demo.step===1) labelPill(ctx, p.x, p.y-40, '점점 커져요', '#1B6FA8');
-  }
-  if (demo.step >= 1 && !p.seeds) drawInset(p.layers);
-}
-
-/* ================================================================
-   체험 모드 (게임)
-   ================================================================ */
-const game = {
-  phase:'ready',            // ready | running | done
-  p:null, updraft:25,
-  warnShown:false, warnAt:0,
-};
-const ESCAPE_Y = 92, WARN_Y = 175;
-
-function reqFor(d){                       // 지름(mm) → 띄우는 데 필요한 기류(0~100)
-  return clamp(12 + 88*Math.pow(d/160, .55), 0, 100);
-}
-function topFalloff(y){                   // 구름 꼭대기 근처에서 상승 기류 약화
-  if (y >= 260) return 1;
-  return clamp(.22 + .78*(y-115)/145, .22, 1);
-}
-
-function newParticle(){
-  return { x:430, y:462, vy:0, d:1.5, cycles:0, layers:0, dir:0, extY:462, seed:Math.random()*7 };
-}
-
-function startGame(){
-  Sound.ensure();
-  game.p = newParticle();
-  game.phase = 'running';
-  game.warnShown = false;
-  $('startOverlay').hidden = true;
-  $('resultOverlay').hidden = true;
-  $('warnBanner').hidden = true;
-  $('btnStart').textContent = '처음부터 다시';
-  $('updraft').focus();
-}
-$('btnStart').addEventListener('click', startGame);
-$('btnStartOverlay').addEventListener('click', startGame);
-$('btnRetry').addEventListener('click', startGame);
-$('btnToDemo').addEventListener('click', ()=>switchMode('demo'));
-
-const slider = $('updraft');
-slider.addEventListener('input', ()=>{
-  game.updraft = +slider.value;
-  $('updraftVal').textContent = slider.value;
-  Sound.ensure();
-});
-addEventListener('keydown', e=>{
-  if (mode!=='game') return;
-  if (e.key==='ArrowUp' || e.key==='ArrowDown'){
-    if (document.activeElement !== slider){
-      e.preventDefault();
-      slider.value = clamp(+slider.value + (e.key==='ArrowUp'?3:-3), 0, 100);
-      slider.dispatchEvent(new Event('input'));
-    }
-  }
-});
-
-/* 최고 기록 */
-function loadBest(){ try{ return +localStorage.getItem('hailLabBest') || 0; }catch(e){ return 0; } }
-function saveBest(v){ try{ localStorage.setItem('hailLabBest', v); }catch(e){} }
-let best = loadBest();
-function fmtSize(mm){
-  return mm >= 10 ? (mm/10).toFixed(1) + ' cm' : mm.toFixed(1) + ' mm';
-}
-function renderBest(){
-  $('bestVal').textContent = best > 0 ? fmtSize(best) : '아직 없음';
-}
-renderBest();
-
-function updateGame(dt){
-  Sound.setWind(game.phase==='running' ? Math.pow(game.updraft/100,1.4) : 0);
-  if (game.phase !== 'running'){ updateHUD(); return; }
-  const p = game.p;
-  const need = reqFor(p.d);
-  const eff = game.updraft * topFalloff(p.y);
-  const fall = topFalloff(p.y);
-  const acc = (eff - need) * 8;                   // px/s², 양수 = 위쪽
-  p.vy -= acc * dt;
-  p.vy *= Math.exp(-1.6 * dt);                    // 공기 저항 — 평형 높이에서 안정적으로 떠 있게
-  const maxFall = 85 + p.d*.55;
-  const maxRise = 55 + 120*fall;                  // 꼭대기 근처에서는 천천히 → 반응할 시간
-  p.vy = clamp(p.vy, -maxRise, maxFall);
-  p.y += p.vy * dt;
-  p.x = 430 + Math.sin(nowSec*.65 + p.seed) * 58 * clamp((CLOUD_BASE + 40 - p.y)/120, .25, 1);
-
-  /* 상승·하강 반복 감지 (이력 현상으로 잔떨림 무시) */
-  if (p.dir === 1){
-    if (p.y < p.extY) p.extY = p.y;
-    if (p.y > p.extY + 30 && p.vy > 12){          // 꼭대기 찍고 하강 시작 = 반복 1회
-      p.dir = -1; p.extY = p.y;
-      p.cycles++; p.layers = p.cycles;
-      Sound.layer();
-    }
-  } else if (p.dir === -1){
-    if (p.y > p.extY) p.extY = p.y;
-    if (p.y < p.extY - 30 && p.vy < -12){ p.dir = 1; p.extY = p.y; }
-  } else {
-    if (p.vy < -8){ p.dir = 1; p.extY = p.y; }
-    else if (p.vy > 8){ p.dir = -1; p.extY = p.y; }
-  }
-
-  /* 물방울은 기류를 타고 흐른다 — 입자 곁을 지나가며 만난다 */
-  for (const d of droplets){
-    if (d.gone > 0) continue;
-    d.y += (12 - game.updraft) * .9 * dt;
-    if (d.y < DROP_Y0 - 8){ d.y = DROP_Y1 + 6; d.x = lerp(DROP_X0, DROP_X1, dropRng()); }
-    if (d.y > DROP_Y1 + 8){ d.y = DROP_Y0 - 6; d.x = lerp(DROP_X0, DROP_X1, dropRng()); }
-  }
-
-  /* 물방울 흡수 */
-  const rp = radiusPx(p.d);
-  for (const d of droplets){
-    if (d.gone > 0){ d.gone -= dt; if (d.gone <= 0) spawnDroplet(dropRng, d); continue; }
-    const dx = d.x - p.x, dy = d.y - p.y;
-    if (dx*dx + dy*dy < Math.pow(rp + d.r + 10, 2)){
-      d.gone = 1.4 + dropRng()*1.4;
-      p.d = Math.min(p.d + 1.4 + p.d*0.05, 200);
-      p.happyUntil = nowSec + .5;
-      Sound.plink(p.d);
-    }
-  }
-
-  /* 경고 + 구름 밖 탈출 실패 */
-  if (p.y < WARN_Y && p.vy < -30){
-    if (!game.warnShown || nowSec - game.warnAt > 1.6){
-      game.warnShown = true; game.warnAt = nowSec; Sound.warn();
-    }
-    $('warnBanner').hidden = false;
-  } else {
-    $('warnBanner').hidden = true;
-  }
-  if (p.y < ESCAPE_Y){ finishGame('escape'); return; }
-
-  /* 착지 */
-  if (p.y + rp >= GROUND_Y){
-    p.y = GROUND_Y - rp;
-    finishGame('land');
-    return;
-  }
-  updateHUD();
-}
-
-function updateHUD(){
-  const p = game.p;
-  const need = p ? reqFor(p.d) : 0;
-  $('gCur').firstElementChild.style.width = game.updraft + '%';
-  $('gCurVal').textContent = game.updraft;
-  $('gNeed').firstElementChild.style.width = need.toFixed(0) + '%';
-  $('gNeedVal').textContent = need.toFixed(0);
-  if (p){
-    $('stSize').innerHTML = p.d.toFixed(1) + ' <small>mm</small>' +
-      (p.d >= 10 ? ' <small>(' + (p.d/10).toFixed(1) + ' cm)</small>' : '');
-    $('stCycles').textContent = p.cycles + '회';
-    $('stLayers').textContent = p.layers + '겹';
-    const st = $('stState');
-    if (game.phase !== 'running'){ st.textContent = '–'; st.className = ''; }
-    else if (p.vy < -12){ st.textContent = '상승 중 ⬆'; st.className = 'up'; }
-    else if (p.vy > 12){ st.textContent = '하강 중 ⬇'; st.className = 'down'; }
-    else { st.textContent = '떠 있음'; st.className = ''; }
-  } else {
-    $('stSize').textContent = '–'; $('stCycles').textContent = '–';
-    $('stLayers').textContent = '–'; $('stState').textContent = '–';
-  }
-}
-
-function verdict(d){
-  if (d < 5)   return { win:false, title:'아직 우박이 되지 못했어요',
-    msg:'지름 5 mm보다 작은, 아직 우박이 되지 못한 작은 얼음 알갱이예요. 구름 속에 더 오래 머무르며 물방울을 많이 만나야 해요.' };
-  if (d < 10)  return { win:true, title:'우박이 되었어요!',
-    msg:'지름 5 mm를 넘어 우박으로 인정! 아직은 작은 우박이에요. (5 mm ~ 1 cm)' };
-  if (d < 50)  return { win:true, title:'실제 우박 크기!',
-    msg:'실제로 내리는 우박은 대부분 1~5 cm 정도랍니다. 교과서에 나오는 딱 그 크기예요!' };
-  if (d < 150) return { win:true, title:'큰 피해를 줄 수 있는 우박!',
-    msg:'이 정도면 자동차를 찌그러뜨리고 창문을 깨뜨릴 수 있어요. 농작물에도 큰 피해를 줍니다.' };
-  return { win:true, title:'기록적인 우박! 🏆',
-    msg:'지름 15 cm가 넘는 우박은 아주 드물어요. 엄청난 상승 기류를 견뎌 낸 기록적인 크기입니다!' };
-}
-
-function finishGame(how){
-  game.phase = 'done';
-  $('warnBanner').hidden = true;
-  Sound.setWind(0);
-  const p = game.p;
-  const t = $('resTitle'), m = $('resMsg'), sz = $('resSize'),
-        xc = $('resXsec'), bs = $('resBest');
-
-  if (how === 'escape'){
-    t.textContent = '구름 꼭대기 위로 튀어나갔어요!';
-    t.className = 'fail';
-    m.textContent = '상승 기류가 너무 강해서 얼음 알갱이가 구름 밖으로 날아가 버렸어요. 꼭대기에 가까워지면 기류를 조금 줄여 보세요.';
-    sz.textContent = ''; xc.textContent = ''; bs.textContent = '';
-    $('xsec').hidden = true;
-    $('resultOverlay').hidden = false;
-    updateHUD();
-    return;
-  }
-
-  Sound.thud(p.d);
-  const v = verdict(p.d);
-  t.textContent = v.title;
-  t.className = v.win ? 'win' : 'fail';
-  m.textContent = v.msg;
-  sz.textContent = '지름 ' + fmtSize(p.d);
-
-  if (v.win){
-    $('xsec').hidden = false;
-    const c2 = $('xsec').getContext('2d');
-    c2.clearRect(0, 0, 200, 200);
-    drawCrossSection(c2, 100, 100, 88, p.layers);
-    xc.textContent = p.layers > 0
-      ? '얼음층 ' + p.layers + '겹 = 상승·하강 ' + p.cycles + '회'
-      : '한 번에 자라서 얼음층이 아직 안 보여요';
-    let bestLine = '';
-    if (p.d > best){
-      best = p.d; saveBest(best); renderBest();
-      bestLine = '<span class="new-best">🏆 새로운 최고 기록!</span> ';
-    }
-    bs.innerHTML = bestLine + (p.d < 150
-      ? '다음 목표: 지름 <b>15 cm</b>의 기록적인 우박에 도전해 보세요!'
-      : '최고 난도 달성! 친구와 기록을 겨뤄 보세요.');
-  } else {
-    $('xsec').hidden = true;
-    xc.textContent = '';
-    bs.textContent = '다시 도전해서 지름 5 mm를 넘겨 보세요!';
-  }
-  $('resultOverlay').hidden = false;
-  updateHUD();
-}
-
-function drawGame(){
-  drawScene({ upStrength: game.updraft/100, dropletDrift:true });
-  // 구름 꼭대기 경고선
-  if (game.phase === 'running' && game.p.y < WARN_Y + 60){
-    ctx.strokeStyle = 'rgba(198,54,43,.75)'; ctx.lineWidth = 3;
-    ctx.setLineDash([16,10]);
-    ctx.beginPath(); ctx.moveTo(180, ESCAPE_Y); ctx.lineTo(720, ESCAPE_Y); ctx.stroke();
-    ctx.setLineDash([]);
-  }
-  if (game.p){
-    const p = game.p;
-    let mood = 'smile';
-    if (game.phase === 'running' && p.y < WARN_Y + 55) mood = 'worry';
-    else if (game.phase === 'running' && p.vy > 70) mood = 'wow';
-    if (p.happyUntil && nowSec < p.happyUntil) mood = 'yay';
-    if (game.phase === 'done') mood = p.d >= 5 ? 'yay' : 'worry';
-    if (game.phase === 'running' && p.d < 8){       // 작을 때는 위치 표시 링
-      ctx.strokeStyle = 'rgba(217,67,43,.8)'; ctx.lineWidth = 2;
-      ctx.setLineDash([5,5]);
-      ctx.beginPath(); ctx.arc(p.x, p.y, 15 + Math.sin(nowSec*3)*3, 0, 7); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    drawHail(p.x, p.y, p.d, p.layers, mood);
-    if (p.layers >= 1) drawInset(p.layers);
-  }
-}
-
-/* ================================================================
-   모드 전환 + 메인 루프
-   ================================================================ */
-let mode = 'demo';
-function switchMode(m){
-  mode = m;
-  $('tabDemo').classList.toggle('on', m==='demo');
-  $('tabGame').classList.toggle('on', m==='game');
-  $('demoPanel').hidden = m!=='demo';
-  $('gamePanel').hidden = m!=='game';
-  $('warnBanner').hidden = true;
-  $('resultOverlay').hidden = true;
-  if (m === 'game'){
-    $('startOverlay').hidden = game.phase === 'running';
-    demoSetPlaying(false);
-  } else {
-    $('startOverlay').hidden = true;
-    Sound.setWind(0);
-  }
-}
-$('tabDemo').addEventListener('click', ()=>switchMode('demo'));
-$('tabGame').addEventListener('click', ()=>switchMode('game'));
-
-demoSetStep(0);
-let lastTs = performance.now();
-function loop(ts){
-  const dt = Math.min((ts - lastTs)/1000, .05);
-  lastTs = ts;
-  nowSec = ts/1000;
-  dashOff -= dt * (reduceMotion ? 14 : 42) * (mode==='game' ? .4 + game.updraft/80 : 1);
-
-  if (mode === 'demo'){ updateDemo(dt); drawDemo(); }
-  else { updateGame(dt); drawGame(); }
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
+S1.go(0);
+requestAnimationFrame(frame);
+})();
 </script>
+</body>
+</html>
