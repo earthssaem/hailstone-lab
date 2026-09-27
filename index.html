@@ -318,13 +318,20 @@ function track(d){const p=el('path',{d},MEAS);const L=p.getTotalLength();return{
 function arrow(p,d,color,o){
   o=o||{};const w=o.w||7,hl=o.head||w*1.6+8,tr=track(d),L=tr.L;
   const g=el('g',{},p),dash=`${(L-hl*.7).toFixed(1)} ${L+60}`;
-  el('path',{d,fill:'none',stroke:INK,'stroke-width':w+6,'stroke-linecap':'round','stroke-dasharray':dash},g);
+  el('path',{d,fill:'none',stroke:INK,'stroke-width':w+(o.soft?3:6),'stroke-opacity':o.soft?.35:1,'stroke-linecap':'round','stroke-dasharray':dash},g);
   el('path',{d,fill:'none',stroke:color,'stroke-width':w,'stroke-linecap':'round','stroke-dasharray':dash},g);
   const flow=el('path',{d,fill:'none',stroke:'#fff','stroke-opacity':.75,'stroke-width':Math.max(2,w*.32),'stroke-linecap':'round','stroke-dasharray':'7 21'},g);
   const a=tr.at(L),b=tr.at(L-6),ang=Math.atan2(a.y-b.y,a.x-b.x);
   const bx=a.x-Math.cos(ang)*hl,by=a.y-Math.sin(ang)*hl,nx=-Math.sin(ang)*hl*.62,ny=Math.cos(ang)*hl*.62;
-  el('polygon',{points:`${a.x},${a.y} ${bx+nx},${by+ny} ${bx-nx},${by-ny}`,fill:color,stroke:INK,'stroke-width':3,'stroke-linejoin':'round'},g);
+  el('polygon',{points:`${a.x},${a.y} ${bx+nx},${by+ny} ${bx-nx},${by-ny}`,fill:color,stroke:INK,'stroke-width':o.soft?1.5:3,'stroke-opacity':o.soft?.4:1,'stroke-linejoin':'round'},g);
   return{g,flow};
+}
+// 우박이 움직인 길: 진한 테두리 + 밝은 하늘색으로 공기 흐름 화살표보다 눈에 띄게
+const HAIL='#12A4F0';
+function hailPath(g,d,a){
+  const o=el('path',Object.assign({d,fill:'none',stroke:INK,'stroke-width':8,'stroke-linecap':'round','stroke-linejoin':'round'},a||{}),g);
+  const t=el('path',Object.assign({d,fill:'none',stroke:HAIL,'stroke-width':4.5,'stroke-linecap':'round','stroke-linejoin':'round'},a||{}),g);
+  return{set(k,v){o.setAttribute(k,v);t.setAttribute(k,v);}};
 }
 function vArrow(g,x,y1,y2,color){
   const dir=Math.sign(y2-y1)||1,hl=12;
@@ -473,8 +480,8 @@ const S1=(()=>{
   const clouds=[{cx:450,base:BASE,top:262,hw:104,seed:3},{cx:450,base:BASE,top:150,hw:146,seed:5},CB].map(s=>drawCloud(sc.cloudL,sc.defs,s));
   const zero=el('g',{},svg);drawZero(zero,Y0,'left');
   const upG=el('g',{},svg),downG=el('g',{},svg),flows=[];
-  UP_PATHS.forEach(d=>flows.push(arrow(upG,d,RED).flow));
-  DOWN_PATHS.forEach(d=>flows.push(arrow(downG,d,BLUE,{w:6}).flow));
+  UP_PATHS.forEach(d=>flows.push(arrow(upG,d,'#F0907E',{w:4,soft:true}).flow));
+  DOWN_PATHS.forEach(d=>flows.push(arrow(downG,d,'#8DB5E6',{w:4,soft:true}).flow));
   tag(upG,112,356,'상승 기류',{fill:'#FBE5E2'});
   tag(downG,712,262,'하강 기류',{fill:'#DDE9F7'});
   const back=el('g',{},svg),dyn=el('g',{},svg),top=el('g',{},svg);
@@ -550,7 +557,7 @@ const S1=(()=>{
      cap:'얼음 알갱이가 <b>상승 기류</b>를 타고 올라가며 과냉각 물방울과 부딪혀요. 물방울이 알갱이에 닿자마자 <b>얼어붙어서</b> 알갱이가 조금씩 커져요.',
      enter(){
        v.drops=makeDrops(back);v.tr=track(P3);
-       v.trail=el('path',{d:P3,fill:'none',stroke:CYAN,'stroke-width':4,'stroke-linecap':'round','stroke-dasharray':`0 ${v.tr.L+20}`},dyn);
+       v.trail=hailPath(dyn,P3,{'stroke-dasharray':`0 ${v.tr.L+20}`});
        v.catch=[.14,.32,.5,.68,.86].map((f,k)=>{const p=v.tr.at(v.tr.L*f),x=p.x+(k%2?12:-12),y=p.y-5;return{f,x,y,e:el('circle',{cx:x,cy:y,r:4,fill:DROP,stroke:INK,'stroke-width':1.6},dyn)};});
        v.pg=el('g',{},dyn);
        v.ins=el('g',{},top);v.I=makeInset(v.ins,850,245,78);v.st=el('g',{},v.I.c);v.fly=el('g',{},v.I.c);
@@ -560,7 +567,7 @@ const S1=(()=>{
      tick(t,T){
        drift(v.drops,T);v.seedTag.setAttribute('opacity',1-ease((t-1.6)/.5));
        const f=ease((t-.3)/3.8),p=v.tr.at(v.tr.L*f);
-       v.trail.setAttribute('stroke-dasharray',`${(v.tr.L*f).toFixed(1)} ${v.tr.L+20}`);
+       v.trail.set('stroke-dasharray',`${(v.tr.L*f).toFixed(1)} ${v.tr.L+20}`);
        for(const c of v.catch){const k=clamp((f-c.f+.06)/.08,0,1);c.e.setAttribute('cx',lerp(c.x,p.x,k));c.e.setAttribute('cy',lerp(c.y,p.y,k));c.e.setAttribute('r',(4*(1-k)).toFixed(2));}
        const r=5+2.5*f;drawP(v.pg,p.x,p.y,r,2);v.I.point(p.x,p.y,r+6);
        stoneIn(v.I,v.st,[13,13+11*f]);
@@ -570,9 +577,9 @@ const S1=(()=>{
      cap:'무거워진 알갱이는 내려가다가 다시 <b>강한 상승 기류</b>를 만나 올라가요. <b>상승과 하강을 반복</b>할 때마다 물방울이 얼어붙어 얼음층이 한 겹씩 늘어나요.',
      enter(){
        v.drops=makeDrops(back);
-       el('path',{d:P3,fill:'none',stroke:CYAN,'stroke-width':4,'stroke-linecap':'round'},dyn);
+       hailPath(dyn,P3);
        v.segs=SEG4.map(track);v.tot=v.segs.reduce((a,s)=>a+s.L,0);
-       v.trail=el('path',{d:P4,fill:'none',stroke:CYAN,'stroke-width':4,'stroke-linecap':'round','stroke-dasharray':`0 ${v.tot+20}`},dyn);
+       v.trail=hailPath(dyn,P4,{'stroke-dasharray':`0 ${v.tot+20}`});
        v.pg=el('g',{},dyn);
        v.ins=el('g',{},top);v.I=makeInset(v.ins,850,245,78);v.st=el('g',{},v.I.c);v.lbl=el('g',{},v.ins);v.n=-1;
      },
@@ -581,7 +588,7 @@ const S1=(()=>{
        const tt=clamp(t-.3,0,6),k=Math.min(3,Math.floor(tt/1.5)),u=ease((tt-k*1.5)/1.5);
        const p=v.segs[k].at(v.segs[k].L*u);
        let done=0;for(let i=0;i<k;i++)done+=v.segs[i].L;done+=v.segs[k].L*u;
-       v.trail.setAttribute('stroke-dasharray',`${done.toFixed(1)} ${v.tot+20}`);
+       v.trail.set('stroke-dasharray',`${done.toFixed(1)} ${v.tot+20}`);
        const prog=(k+u)/4,r=7.5+4.5*prog;drawP(v.pg,p.x,p.y,r,2+k);v.I.point(p.x,p.y,r+6);
        const radii=SEQ.slice(0,2+k);radii.push(lerp(SEQ[1+k],SEQ[2+k],u));stoneIn(v.I,v.st,radii);
        const n=radii.length;if(n!==v.n){v.n=n;clear(v.lbl);tag(v.lbl,850,150,`얼음층 ${n}겹`,{fs:16,fill:'#FFF4D6'});}
@@ -589,7 +596,7 @@ const S1=(()=>{
     {title:'땅으로 떨어져요',dur:5.2,
      cap:'얼음 덩어리가 <b>상승 기류가 떠받치지 못할 만큼 무거워지면</b> 땅으로 떨어져요. 이것이 <b>우박</b>이에요. 우박은 유리창을 깨거나 자동차·농작물에 피해를 주기도 해요.',
      enter(){
-       el('path',{d:P3+' '+P4.replace(/^M[\d.,]+ /,''),fill:'none',stroke:CYAN,'stroke-width':4,'stroke-linecap':'round',opacity:.5},dyn);
+       hailPath(el('g',{opacity:.55},dyn),P3+' '+P4.replace(/^M[\d.,]+ /,''));
        v.tr=track(P5);v.shaft=el('g',{},dyn);v.pile=el('g',{opacity:0},dyn);v.fg=el('g',{},dyn);v.pg=el('g',{},dyn);
        const R=rng(33);v.stones=Array.from({length:14},()=>({x:556+R()*196,ph:R(),r:3.5+R()*3}));
        for(let i=0;i<16;i++){const x=520+R()*250,onCar=x>662&&x<742;el('circle',{cx:x,cy:(onCar?(x>690&&x<716?354:370):396)-R()*2,r:3+R()*2.5,fill:'#fff',stroke:INK,'stroke-width':2},v.pile);}
@@ -686,23 +693,24 @@ const S2=(()=>{
   text(rl,rx+24,113,'물방울 없음',{'font-size':13,'font-family':"'Noto Sans KR',sans-serif",fill:'#4A5763'});
   text(rl,rx+24,176,'과냉각 물방울',{'font-size':14,fill:'#2A5F9E'});text(rl,rx+24,195,'→ 우박이 자라요',{'font-size':14,fill:'#2A5F9E'});
   text(rl,rx+24,296,'0 ℃보다 따뜻',{'font-size':14,fill:'#B8321F'});text(rl,rx+24,315,'→ 녹아요',{'font-size':14,fill:'#B8321F'});
-  const arrG=el('g',{},svg),downG=el('g',{opacity:.55},arrG),upG=el('g',{},arrG),flows=[];
-  DOWN_PATHS.forEach(d=>flows.push(arrow(downG,d,BLUE,{w:5}).flow));
+  const arrG=el('g',{},svg),downG=el('g',{opacity:.6},arrG),upG=el('g',{},arrG),flows=[];
+  DOWN_PATHS.forEach(d=>flows.push(arrow(downG,d,'#8DB5E6',{w:3.5,soft:true}).flow));
   let ups=[];
   const dropG=el('g',{},svg),trailG=el('g',{},svg),pG=el('g',{},svg),fG=el('g',{},svg);
-  const trail=el('polyline',{fill:'none',stroke:CYAN,'stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round','stroke-opacity':.85},trailG);
+  const trailO=el('polyline',{fill:'none',stroke:INK,'stroke-width':7.5,'stroke-linecap':'round','stroke-linejoin':'round'},trailG);
+  const trail=el('polyline',{fill:'none',stroke:HAIL,'stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'},trailG);
 
-  const LV={weak:{U:45,w:4},mid:{U:105,w:6.5},strong:{U:165,w:9}};
+  const LV={weak:{U:45,w:2.5},mid:{U:105,w:4},strong:{U:165,w:5.5}};
   const SPEED=.6,G=.16,MELT=.1,YCEIL=100,FULL=175;
   const VT=d=>58*Math.pow(Math.max(d,0),.7), rad=d=>d>0?3.5+d*4.6:5;
   let lv='mid',U=LV.mid.U,st='idle',holding=false,heavy=false,u=0,x=400,y=Y0-14,D=.2,layers=[],cycles=0,dir=1,ext=0,pts=[],ptT=0,landT=0,flowPos=0,capKey='';
   const R=rng(5),drops=[];
   for(let i=0;i<34;i++)drops.push({x:312+R()*276,y:YTOP+4+R()*(Y0-YTOP-8),e:el('circle',{r:3.4,fill:DROP,stroke:INK,'stroke-width':1.5},dropG)});
 
-  function buildUps(){clear(upG);ups=UP_PATHS.map(d=>arrow(upG,d,RED,{w:LV[lv].w}));tag(upG,118,356,'상승 기류',{fill:'#FBE5E2'});$('#s2capU').style.left=(U/FULL*100)+'%';}
+  function buildUps(){clear(upG);ups=UP_PATHS.map(d=>arrow(upG,d,'#F0907E',{w:LV[lv].w,soft:true}));tag(upG,118,356,'상승 기류',{fill:'#FBE5E2'});$('#s2capU').style.left=(U/FULL*100)+'%';}
   function reset(){
     st='idle';heavy=false;u=0;x=400;y=Y0-14;layers=[{t:'seed',d:.2}];D=.2;cycles=0;dir=1;ext=y;pts=[];landT=0;
-    $('#s2pop').className='pop';$('#s2play').hidden=false;trail.setAttribute('points','');
+    $('#s2pop').className='pop';$('#s2play').hidden=false;trail.setAttribute('points','');trailO.setAttribute('points','');
     document.querySelectorAll('#s2lv button').forEach(b=>b.disabled=false);$('#s2start').disabled=false;
     draw();hud();
   }
@@ -784,7 +792,7 @@ const S2=(()=>{
       u+=((holding&&!heavy?U:0)-u)*Math.min(1,dt*5);
       let vy=(Math.max(VT(D),18)-u)*SPEED;
       y+=vy*dt;if(y<YCEIL){y=YCEIL;vy=0;}
-      x=clamp(x+(vy>0?10:-8)*dt,360,540);
+      x+=(vy>0?20:-15)*dt;if(x>545)x=545;if(x<355)x=355;
       if(y>=YTOP&&y<=Y0)grow(G*dt,y<YMID?'white':'clear');else if(y>Y0)melt(MELT/(.4+D)*dt);
       if(dir<0){if(y<ext)ext=y;else if(y-ext>18){dir=1;ext=y;cycles++;}}
       else{if(y>ext)ext=y;else if(ext-y>18){dir=-1;ext=y;}}
@@ -800,7 +808,7 @@ const S2=(()=>{
       u+=(0-u)*Math.min(1,dt*5);
     }else u+=(0-u)*Math.min(1,dt*5);
     // 궤적
-    if(st==='play'||st==='fall'){ptT+=dt;if(ptT>.05){ptT=0;pts.push(x.toFixed(1)+','+y.toFixed(1));if(pts.length>400)pts.shift();trail.setAttribute('points',pts.join(' '));}}
+    if(st==='play'||st==='fall'){ptT+=dt;if(ptT>.05){ptT=0;pts.push(x.toFixed(1)+','+y.toFixed(1));if(pts.length>400)pts.shift();trail.setAttribute('points',pts.join(' '));trailO.setAttribute('points',pts.join(' '));}}
     // 물방울 (상승 기류를 타고 올라감)
     const inZone=st==='play'&&y>=YTOP&&y<=Y0,rr=rad(D)+5;
     for(const d of drops){
@@ -809,7 +817,7 @@ const S2=(()=>{
       if(inZone&&Math.hypot(d.x-x,d.y-y)<rr){d.y=Y0-3;d.x=312+Math.random()*276;}
       d.e.setAttribute('cx',d.x.toFixed(1));d.e.setAttribute('cy',d.y.toFixed(1));
     }
-    const k=.5+.5*clamp(u/U,0,1);ups.forEach(a=>a.g.setAttribute('opacity',k.toFixed(2)));
+    const k=.45+.4*clamp(u/U,0,1);ups.forEach(a=>a.g.setAttribute('opacity',k.toFixed(2)));
     if(!RM){flowPos+=(14+u*.5)*dt;const off=(-flowPos%28).toFixed(1);ups.forEach(a=>a.flow.setAttribute('stroke-dashoffset',off));flows.forEach(f=>f.setAttribute('stroke-dashoffset',(-(flowPos*.6)%28).toFixed(1)));}
     let yy=y;if(st==='landed'&&landT<.7)yy=y-Math.abs(Math.sin(landT/.35*Math.PI))*10*(1-landT/.7);
     const sy=y;y=yy;draw();y=sy;
