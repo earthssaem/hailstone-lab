@@ -108,16 +108,16 @@ button:disabled{cursor:default;opacity:.45}
 #stage2 .stage-wrap{touch-action:none;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 
 /* 결과 팝업 */
-.pop{position:absolute;right:3%;top:9%;width:min(47%,400px);background:var(--paper);border:4px solid var(--ink);border-radius:16px;padding:12px 14px 14px;box-shadow:0 6px 0 rgba(36,48,58,.25);display:none;z-index:3}
+.pop{background:var(--paper);border:4px solid var(--ink);border-radius:16px;padding:12px 14px 14px;box-shadow:0 6px 0 rgba(36,48,58,.25);display:none;z-index:3}
 .pop.show{display:block}
 .pop.good{background:#E4F3E8;border-color:var(--ok)}
 .pop.bad{background:#FBE5E2;border-color:var(--bad)}
 .pop.warn{background:#FDF3DC;border-color:var(--warn)}
-.pop h4{font-family:var(--display);font-weight:400;font-size:clamp(20px,2.3vw,28px);margin:0 0 6px}
+.pop h4{font-family:var(--display);font-weight:400;font-size:24px;margin:0 0 6px}
 .pop-body{display:flex;gap:12px;align-items:center}
-.pop-body svg{flex:0 0 auto;width:clamp(72px,8.5vw,110px);height:auto}
-.pop p{margin:0 0 4px;font-size:clamp(13px,1.3vw,15px);word-break:keep-all;line-height:1.45}
-.pop p.main{font-weight:700;font-size:clamp(15px,1.55vw,18px)}
+.pop-body svg{flex:0 0 auto;width:96px;height:auto}
+.pop p{margin:0 0 4px;font-size:14px;word-break:keep-all;line-height:1.45}
+.pop p.main{font-weight:700;font-size:16px}
 .pop-actions{margin-top:8px;display:flex;justify-content:flex-end}
 .pop-actions .btn{font-size:17px;padding:8px 16px}
 
@@ -163,7 +163,6 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
   .dots{order:-1;width:100%;justify-content:center}
   .stage,.split .stage{width:100%}
   .caption,.split .caption{position:static;margin-top:8px;font-size:15px}
-  .pop{position:static;width:auto;margin-top:8px}
   .badge{top:8px;left:8px;font-size:13px;padding:4px 10px}
 }
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
@@ -207,14 +206,6 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
           <div class="badge">우박 만들기</div>
         </div>
         <div class="caption" id="s2cap" aria-live="polite"></div>
-        <div class="pop" id="s2pop" aria-live="polite">
-          <h4 id="popTitle"></h4>
-          <div class="pop-body">
-            <svg id="popSvg" viewBox="0 0 120 120" aria-hidden="true"></svg>
-            <div><p class="main" id="popMain"></p><p id="popTip"></p><p id="popBest"></p></div>
-          </div>
-          <div class="pop-actions"><button class="btn primary" id="popAgain">↺ 다시 하기</button></div>
-        </div>
       </div>
       <aside class="side">
         <div class="card">
@@ -225,7 +216,7 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
             <button data-lv="strong">강함<small>거대한 적란운</small></button>
           </div>
         </div>
-        <div class="card">
+        <div class="card" id="s2play">
           <h3>② 꾹 눌러서 우박 키우기</h3>
           <button class="btn primary hold" id="hold">▲ 꾹 누르면 상승 기류</button>
           <p class="hint">누르고 있으면 <b>올라가고</b>, 손을 떼면 <b>내려가요</b>. 무대를 누르거나 스페이스바를 눌러도 돼요.</p>
@@ -238,6 +229,14 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
             <div class="row"><span>상승 기류</span><div class="bar"><i id="s2barU"></i><s id="s2capU"></s></div></div>
             <div class="row"><span>우박 무게</span><div class="bar down"><i id="s2barW"></i></div></div>
           </div>
+        </div>
+          <div class="pop" id="s2pop" aria-live="polite">
+          <h4 id="popTitle"></h4>
+          <div class="pop-body">
+            <svg id="popSvg" viewBox="0 0 120 120" aria-hidden="true"></svg>
+            <div><p class="main" id="popMain"></p><p id="popTip"></p><p id="popBest"></p></div>
+          </div>
+          <div class="pop-actions"><button class="btn primary" id="popAgain">↺ 다시 하기</button></div>
         </div>
         <div class="controls">
           <button class="btn primary" id="s2start">▶ 시작</button>
@@ -703,7 +702,7 @@ const S2=(()=>{
   function buildUps(){clear(upG);ups=UP_PATHS.map(d=>arrow(upG,d,RED,{w:LV[lv].w}));tag(upG,118,356,'상승 기류',{fill:'#FBE5E2'});$('#s2capU').style.left=(U/FULL*100)+'%';}
   function reset(){
     st='idle';heavy=false;u=0;x=400;y=Y0-14;layers=[{t:'seed',d:.2}];D=.2;cycles=0;dir=1;ext=y;pts=[];landT=0;
-    $('#s2pop').className='pop';trail.setAttribute('points','');
+    $('#s2pop').className='pop';$('#s2play').hidden=false;trail.setAttribute('points','');
     document.querySelectorAll('#s2lv button').forEach(b=>b.disabled=false);$('#s2start').disabled=false;
     draw();hud();
   }
@@ -776,7 +775,7 @@ const S2=(()=>{
     const best=readBest(),isNew=D>=.5&&D>best+1e-9;if(isNew)writeBest(D);
     $('#popTitle').textContent=title;$('#popMain').textContent=main;$('#popTip').textContent=tip;
     const b=Math.max(best,D>=.5?D:0);$('#popBest').textContent=b>0?`최고 기록: 지름 ${b.toFixed(1)} cm`+(isNew?' (새 기록!)':''):'';
-    pop.className='pop show '+cls;
+    pop.className='pop show '+cls;$('#s2play').hidden=true;
     document.querySelectorAll('#s2lv button').forEach(bt=>bt.disabled=false);$('#s2start').disabled=false;
   }
   function tick(dt){
