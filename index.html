@@ -124,7 +124,7 @@ button:disabled{cursor:default;opacity:.45}
 /* 슬라이더 */
 .slider+.slider{margin-top:6px}
 .slider label{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;font-weight:700}
-.slider output{font-family:var(--display);font-weight:400;font-size:19px}
+.slider output{font-family:var(--display);font-weight:400;font-size:16px;color:var(--ink-2)}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;cursor:pointer}
 input[type=range]::-webkit-slider-runnable-track{height:12px;border:3px solid var(--ink);border-radius:999px;background:#F4F7FA}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-10px;border-radius:50%;background:#fff;border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
@@ -192,7 +192,7 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
       <div class="dots" id="s1dots" aria-label="단계 바로 가기"></div>
       <div class="spacer"></div>
       <button class="btn ghost" id="s1reset">↺ 처음부터</button>
-      <button class="btn" id="s1auto">▶ 자동 재생</button>
+      <button class="btn" id="s1auto">⏸ 멈춤</button>
       <button class="btn primary" id="s1next">다음 ▶</button>
     </div>
   </section>
@@ -268,8 +268,8 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
         </div>
         <div class="card">
           <h3>② 기온 직접 바꿔 보기</h3>
-          <div class="slider"><label for="tsR"><span>땅 근처(지표) 기온</span><output id="tsO"></output></label><input type="range" id="tsR" class="warm" min="-10" max="36" step="1"></div>
-          <div class="slider"><label for="tuR"><span>약 5 km 상공 기온</span><output id="tuO"></output></label><input type="range" id="tuR" class="cold" min="-30" max="6" step="1"></div>
+          <div class="slider"><label for="tsR"><span>땅 근처 기온</span><output id="tsO"></output></label><input type="range" id="tsR" class="warm" min="-10" max="36" step="1"></div>
+          <div class="slider"><label for="tuR"><span>높은 하늘(상공) 기온</span><output id="tuO"></output></label><input type="range" id="tuR" class="cold" min="-30" max="6" step="1"></div>
         </div>
         <div class="card">
           <h3>③ 계절별 결과 비교</h3>
@@ -329,8 +329,8 @@ function arrow(p,d,color,o){
 // 우박이 움직인 길: 진한 테두리 + 밝은 하늘색으로 공기 흐름 화살표보다 눈에 띄게
 const HAIL='#12A4F0';
 function hailPath(g,d,a){
-  const o=el('path',Object.assign({d,fill:'none',stroke:INK,'stroke-width':8,'stroke-linecap':'round','stroke-linejoin':'round'},a||{}),g);
-  const t=el('path',Object.assign({d,fill:'none',stroke:HAIL,'stroke-width':4.5,'stroke-linecap':'round','stroke-linejoin':'round'},a||{}),g);
+  const o=el('path',Object.assign({d,fill:'none',stroke:INK,'stroke-width':10,'stroke-linecap':'round','stroke-linejoin':'round'},a||{}),g);
+  const t=el('path',Object.assign({d,fill:'none',stroke:HAIL,'stroke-width':6.5,'stroke-linecap':'round','stroke-linejoin':'round'},a||{}),g);
   return{set(k,v){o.setAttribute(k,v);t.setAttribute(k,v);}};
 }
 function vArrow(g,x,y1,y2,color){
@@ -515,10 +515,23 @@ const S1=(()=>{
   const SEG4=['M392,140 C412,140 400,262 420,262','M420,262 C440,262 432,134 452,134','M452,134 C472,134 464,262 484,262','M484,262 C504,262 496,128 520,128'];
   const P4=SEG4.map((s,i)=>i?s.replace(/^M[\d.,]+ /,''):s).join(' ');
   const P5='M520,128 C548,128 562,196 572,252 S588,352 598,388';
+  const tail=d=>' '+d.replace(/^M[\d.,]+ /,'');
+  const P34=P3+tail(P4),P345=P34+tail(P5);
+  let T3,T4,T34,T345;
+  const tracks=()=>{if(!T3){T3=track(P3);T4=track(P4);T34=track(P34);T345=track(P345);}};
+  // 우박이 지나간 길 위를 흘러가는 화살 무늬 → 움직이는 방향이 계속 보이게
+  function chev(g,tr,upto,T){
+    clear(g);const gap=30,off=RM?0:(T*45)%gap;
+    for(let s=off+10;s<upto-8;s+=gap){const a=tr.at(s),b=tr.at(s+4),ang=Math.atan2(b.y-a.y,b.x-a.x)*57.3;
+      el('path',{d:'M-3.5,-4 L2.5,0 L-3.5,4',fill:'none',stroke:'#fff','stroke-width':2.4,'stroke-linecap':'round','stroke-linejoin':'round',transform:`translate(${a.x.toFixed(1)},${a.y.toFixed(1)}) rotate(${ang.toFixed(0)})`},g);}
+  }
+  // 4단계 경로에서 몇 번째 오르내림(구간)인지
+  const SEGL=SEG4.map(d=>track(d).L);
+  function segAt(len){let k=0;while(k<3&&len>SEGL[k]){len-=SEGL[k];k++;}return{k,u:clamp(len/SEGL[k],0,1)};}
   let v={};
 
   const STEPS=[
-    {title:'적란운이 자라요',dur:4.2,
+    {title:'적란운이 자라요',hold:2.5,dur:4.2,
      cap:'햇볕에 땅이 뜨겁게 데워지면 따뜻한 공기가 <b>강한 상승 기류</b>가 되어 솟아올라요. 수증기가 식어 구름이 계속 쌓이면서 키가 아주 큰 <b>적란운</b>이 돼요.',
      enter(){
        const lab=el('g',{opacity:0},dyn);v.lab=lab;
@@ -537,7 +550,7 @@ const S1=(()=>{
        v.lab.setAttribute('opacity',ease((t-2.8)/.5));
        heatP.forEach((p,i)=>{const ph=RM?.3:(T*.55+i*.23)%1;p.setAttribute('transform',`translate(${72+i*46},${398-ph*46})`);p.setAttribute('opacity',(1-ph).toFixed(2));});
      }},
-    {title:'구름 속을 들여다봐요',dur:2.5,
+    {title:'구름 속을 들여다봐요',hold:3.5,dur:2.5,
      cap:'<b>0 ℃ 선</b>보다 높은 곳은 영하예요. 이곳에는 작은 <b>얼음 알갱이</b>와, 영하인데도 얼지 않은 <b>과냉각 물방울</b>이 함께 떠 있어요.',
      enter(){
        v.drops=makeDrops(back);
@@ -553,11 +566,11 @@ const S1=(()=>{
        tag(v.ins,850,150,'영하인데도 액체예요!',{fs:15,fill:'#FFF4D6'});
      },
      tick(t,T){const o=ease(t/.8);back.style.opacity=o;v.tags.setAttribute('opacity',ease((t-.4)/.6));v.ins.setAttribute('opacity',ease((t-.9)/.6));zero.style.opacity=ease(t/.5);drift(v.drops,T);}},
-    {title:'올라가며 커져요',dur:4.6,
+    {title:'올라가며 커져요',hold:0.4,dur:4.6,
      cap:'얼음 알갱이가 <b>상승 기류</b>를 타고 올라가며 과냉각 물방울과 부딪혀요. 물방울이 알갱이에 닿자마자 <b>얼어붙어서</b> 알갱이가 조금씩 커져요.',
      enter(){
-       v.drops=makeDrops(back);v.tr=track(P3);
-       v.trail=hailPath(dyn,P3,{'stroke-dasharray':`0 ${v.tr.L+20}`});
+       v.drops=makeDrops(back);tracks();v.tr=T3;
+       v.trail=hailPath(dyn,P3,{'stroke-dasharray':`0 ${v.tr.L+20}`});v.ch=el('g',{},dyn);
        v.catch=[.14,.32,.5,.68,.86].map((f,k)=>{const p=v.tr.at(v.tr.L*f),x=p.x+(k%2?12:-12),y=p.y-5;return{f,x,y,e:el('circle',{cx:x,cy:y,r:4,fill:DROP,stroke:INK,'stroke-width':1.6},dyn)};});
        v.pg=el('g',{},dyn);
        v.ins=el('g',{},top);v.I=makeInset(v.ins,850,245,78);v.st=el('g',{},v.I.c);v.fly=el('g',{},v.I.c);
@@ -566,38 +579,35 @@ const S1=(()=>{
      },
      tick(t,T){
        drift(v.drops,T);v.seedTag.setAttribute('opacity',1-ease((t-1.6)/.5));
-       const f=ease((t-.3)/3.8),p=v.tr.at(v.tr.L*f);
-       v.trail.set('stroke-dasharray',`${(v.tr.L*f).toFixed(1)} ${v.tr.L+20}`);
+       const q=clamp((t-.2)/3.8,0,1),f=q*q*(2-q)*.5+q*.5,p=v.tr.at(v.tr.L*f);
+       v.trail.set('stroke-dasharray',`${(v.tr.L*f).toFixed(1)} ${v.tr.L+20}`);chev(v.ch,v.tr,v.tr.L*f,T);
        for(const c of v.catch){const k=clamp((f-c.f+.06)/.08,0,1);c.e.setAttribute('cx',lerp(c.x,p.x,k));c.e.setAttribute('cy',lerp(c.y,p.y,k));c.e.setAttribute('r',(4*(1-k)).toFixed(2));}
        const r=5+2.5*f;drawP(v.pg,p.x,p.y,r,2);v.I.point(p.x,p.y,r+6);
        stoneIn(v.I,v.st,[13,13+11*f]);
        clear(v.fly);if(t<4.2&&!RM)for(let i=0;i<3;i++){const ph=(T*.8+i/3)%1,a=i*2.1+1,rr=lerp(74,15+11*f,ease(ph));el('circle',{cx:850+Math.cos(a)*rr,cy:245+Math.sin(a)*rr,r:6,fill:DROP,stroke:INK,'stroke-width':2},v.fly);}
      }},
-    {title:'오르락내리락 반복해요',dur:6.4,
+    {title:'오르락내리락 반복해요',hold:0.8,dur:6.1,
      cap:'무거워진 알갱이는 내려가다가 다시 <b>강한 상승 기류</b>를 만나 올라가요. <b>상승과 하강을 반복</b>할 때마다 물방울이 얼어붙어 얼음층이 한 겹씩 늘어나요.',
      enter(){
        v.drops=makeDrops(back);
-       hailPath(dyn,P3);
-       v.segs=SEG4.map(track);v.tot=v.segs.reduce((a,s)=>a+s.L,0);
-       v.trail=hailPath(dyn,P4,{'stroke-dasharray':`0 ${v.tot+20}`});
+       tracks();v.tot=T4.L;
+       v.trail=hailPath(dyn,P34,{'stroke-dasharray':`${T3.L} ${T34.L+20}`});v.ch=el('g',{},dyn);
        v.pg=el('g',{},dyn);
        v.ins=el('g',{},top);v.I=makeInset(v.ins,850,245,78);v.st=el('g',{},v.I.c);v.lbl=el('g',{},v.ins);v.n=-1;
      },
      tick(t,T){
        drift(v.drops,T);
-       const tt=clamp(t-.3,0,6),k=Math.min(3,Math.floor(tt/1.5)),u=ease((tt-k*1.5)/1.5);
-       const p=v.segs[k].at(v.segs[k].L*u);
-       let done=0;for(let i=0;i<k;i++)done+=v.segs[i].L;done+=v.segs[k].L*u;
-       v.trail.set('stroke-dasharray',`${done.toFixed(1)} ${v.tot+20}`);
+       const done=v.tot*clamp(t/6,0,1),{k,u}=segAt(done),p=T4.at(done);
+       v.trail.set('stroke-dasharray',`${(T3.L+done).toFixed(1)} ${T34.L+20}`);chev(v.ch,T34,T3.L+done,T);
        const prog=(k+u)/4,r=7.5+4.5*prog;drawP(v.pg,p.x,p.y,r,2+k);v.I.point(p.x,p.y,r+6);
        const radii=SEQ.slice(0,2+k);radii.push(lerp(SEQ[1+k],SEQ[2+k],u));stoneIn(v.I,v.st,radii);
        const n=radii.length;if(n!==v.n){v.n=n;clear(v.lbl);tag(v.lbl,850,150,`얼음층 ${n}겹`,{fs:16,fill:'#FFF4D6'});}
      }},
-    {title:'땅으로 떨어져요',dur:5.2,
+    {title:'땅으로 떨어져요',hold:3.2,dur:5.2,
      cap:'얼음 덩어리가 <b>상승 기류가 떠받치지 못할 만큼 무거워지면</b> 땅으로 떨어져요. 이것이 <b>우박</b>이에요. 우박은 유리창을 깨거나 자동차·농작물에 피해를 주기도 해요.',
      enter(){
-       hailPath(el('g',{opacity:.55},dyn),P3+' '+P4.replace(/^M[\d.,]+ /,''));
-       v.tr=track(P5);v.shaft=el('g',{},dyn);v.pile=el('g',{opacity:0},dyn);v.fg=el('g',{},dyn);v.pg=el('g',{},dyn);
+       tracks();v.tr=T4.L?track(P5):null;
+       v.trail=hailPath(dyn,P345,{'stroke-dasharray':`${T34.L} ${T345.L+20}`});v.ch=el('g',{},dyn);v.shaft=el('g',{},dyn);v.pile=el('g',{opacity:0},dyn);v.fg=el('g',{},dyn);v.pg=el('g',{},dyn);
        const R=rng(33);v.stones=Array.from({length:14},()=>({x:556+R()*196,ph:R(),r:3.5+R()*3}));
        for(let i=0;i<16;i++){const x=520+R()*250,onCar=x>662&&x<742;el('circle',{cx:x,cy:(onCar?(x>690&&x<716?354:370):396)-R()*2,r:3+R()*2.5,fill:'#fff',stroke:INK,'stroke-width':2},v.pile);}
        v.heavy=el('g',{opacity:0},dyn);tag(v.heavy,640,150,'상승 기류보다 무거워요!',{fs:15,fill:'#FFF4D6'});
@@ -605,11 +615,13 @@ const S1=(()=>{
      },
      tick(t,T){
        clear(v.fg);let p,r=12;
-       if(t<1.5){p={x:520,y:128};const dn=lerp(18,60,ease(t/1.3));vArrow(v.fg,520,128-16,128-16-34,RED);vArrow(v.fg,520,128+16,128+16+dn,BLUE);
+       let fl=0;
+       if(t<1.5){p={x:520,y:128-Math.sin(t*6)*2*(1-t/1.5)};const dn=lerp(18,60,ease(t/1.3));vArrow(v.fg,520,128-16,128-16-34,RED);vArrow(v.fg,520,128+16,128+16+dn,BLUE);
          text(v.fg,500,98,'상승 기류',{'font-size':14,'text-anchor':'end',fill:'#B8321F'});text(v.fg,540,165,'무게',{'font-size':14,fill:'#2A5F9E'});}
-       else if(t<3.3){const u=Math.pow((t-1.5)/1.8,1.5);p=v.tr.at(v.tr.L*u);}
-       else{const b=t-3.3;p=v.tr.at(v.tr.L);p={x:p.x+Math.min(b,.4)*20,y:p.y-(b<.4?Math.sin(b/.4*Math.PI)*14:0)};}
+       else if(t<3.3){const u=Math.pow((t-1.5)/1.8,1.5);fl=v.tr.L*u;p=v.tr.at(fl);}
+       else{const b=t-3.3;fl=v.tr.L;p=v.tr.at(v.tr.L);p={x:p.x+Math.min(b,.4)*20,y:p.y-(b<.4?Math.sin(b/.4*Math.PI)*14:0)};}
        v.heavy.setAttribute('opacity',ease((t-.9)/.4)*(t<3?1:1-ease((t-3)/.4)));
+       v.trail.set('stroke-dasharray',`${(T34.L+fl).toFixed(1)} ${T345.L+20}`);chev(v.ch,T345,T34.L+fl,T);
        drawP(v.pg,p.x,p.y,r,4);
        clear(v.shaft);
        if(t>1.8){for(const s of v.stones){const ph=RM?s.ph:(T*.55+s.ph)%1,onCar=s.x>662&&s.x<742,floor=onCar?(s.x>690&&s.x<716?354:370):396;
@@ -617,7 +629,7 @@ const S1=(()=>{
          el('circle',{cx:s.x,cy:y,r:s.r,fill:'#fff',stroke:INK,'stroke-width':2},v.shaft);}}
        v.pile.setAttribute('opacity',ease((t-3.2)/.8));v.hail.setAttribute('opacity',ease((t-3.3)/.4));
      }},
-    {title:'우박을 잘라 보면',dur:3.8,
+    {title:'우박을 잘라 보면',hold:4,dur:3.8,
      cap:'우박을 잘라 보면 <b>양파처럼 여러 겹의 층</b>이 보여요. 구름 속에서 <b>상승과 하강을 여러 번 반복</b>하며 자랐다는 증거예요. 크기는 대부분 <b>1~5 cm</b>예요.',
      enter(){
        el('rect',{x:-10,y:-10,width:980,height:560,fill:'#FFFDF8','fill-opacity':.9},top);
@@ -645,7 +657,7 @@ const S1=(()=>{
      }},
   ];
 
-  const st={i:0,t0:0,auto:false,seen:new Set([0])};
+  const st={i:0,t0:0,auto:!RM,seen:new Set([0])};
   const dotsBox=$('#s1dots');
   const dots=STEPS.map((s,i)=>{const b=document.createElement('button');b.className='dot';b.textContent=i+1;b.title=`${i+1}단계: ${s.title}`;b.setAttribute('aria-label',`${i+1}단계 ${s.title}`);b.addEventListener('click',()=>{stopAuto();go(i);});dotsBox.appendChild(b);return b;});
   function go(i){
@@ -666,13 +678,14 @@ const S1=(()=>{
   $('#s1next').addEventListener('click',()=>{stopAuto();go(st.i+1);});
   $('#s1reset').addEventListener('click',()=>{stopAuto();go(0);});
   $('#s1auto').addEventListener('click',()=>{if(st.auto){stopAuto();return;}st.auto=true;$('#s1auto').textContent='⏸ 멈춤';if(st.i===STEPS.length-1)go(0);else go(st.i);});
+  if(!st.auto)$('#s1auto').textContent='▶ 자동 재생';
   let flowPos=0,lastT=0;
   function tick(T){
     const s=STEPS[st.i],t=RM?s.dur+1:T-st.t0;
     s.tick(t,T);
     if(!RM){flowPos+=clamp(T-lastT,0,.05)*38;const off=(-flowPos%28).toFixed(1);flows.forEach(f=>f.setAttribute('stroke-dashoffset',off));}
     lastT=T;
-    if(st.auto&&T-st.t0>s.dur+3.2){if(st.i<STEPS.length-1)go(st.i+1);else stopAuto();}
+    if(st.auto&&T-st.t0>s.dur+s.hold){if(st.i<STEPS.length-1)go(st.i+1);else stopAuto();}
   }
   return{enter(){go(st.i);},tick,go,key(k){if(k==='ArrowRight'){stopAuto();go(st.i+1);}if(k==='ArrowLeft'){stopAuto();go(st.i-1);}}};
 })();
@@ -852,8 +865,14 @@ const S3=(()=>{
   // 그래프 틀
   el('rect',{x:598,y:20,width:348,height:420,rx:14,fill:'#fff',stroke:INK,'stroke-width':3},graphG);
   text(graphG,780,45,'높이에 따른 기온',{'font-size':18,'text-anchor':'middle'});
-  for(let t=-40;t<=40;t+=20){el('line',{x1:GX(t),y1:GY(10),x2:GX(t),y2:GY(0),stroke:t===0?INK:'#D5DEE5','stroke-width':t===0?2.5:2,'stroke-dasharray':t===0?'6 5':''},graphG);text(graphG,GX(t),420,t===40?'40 ℃':String(t),{'font-size':14,'text-anchor':'middle','font-family':"'Noto Sans KR',sans-serif"});}
-  for(let k=0;k<=10;k+=2){el('line',{x1:GX(-40),y1:GY(k),x2:GX(40),y2:GY(k),stroke:k?'#E3EAF0':INK,'stroke-width':k?1.5:3},graphG);text(graphG,634,GY(k)+5,k===10?'10 km':String(k),{'font-size':13,'text-anchor':'end','font-family':"'Noto Sans KR',sans-serif"});}
+  for(let t=-40;t<=40;t+=20)el('line',{x1:GX(t),y1:GY(10),x2:GX(t),y2:GY(0),stroke:t===0?INK:'#E3EAF0','stroke-width':t===0?2.5:1.5,'stroke-dasharray':t===0?'6 5':''},graphG);
+  for(let k=0;k<=10;k+=2)el('line',{x1:GX(-40),y1:GY(k),x2:GX(40),y2:GY(k),stroke:k?'#E3EAF0':INK,'stroke-width':k?1.5:3},graphG);
+  text(graphG,GX(0),420,'0 ℃',{'font-size':14,'text-anchor':'middle'});
+  text(graphG,GX(-40),420,'← 차가움',{'font-size':14,'text-anchor':'start',fill:'#2A5F9E'});
+  text(graphG,GX(40),420,'따뜻함 →',{'font-size':14,'text-anchor':'end',fill:'#B8321F'});
+  el('line',{x1:622,y1:GY(0),x2:622,y2:GY(9.6),stroke:INK,'stroke-width':2.5},graphG);el('polygon',{points:`622,${GY(10)} 616,${GY(9.4)} 628,${GY(9.4)}`,fill:INK},graphG);
+  text(graphG,614,GY(5),'높이',{'font-size':14,'text-anchor':'middle',transform:`rotate(-90 614 ${GY(5)})`});
+  text(graphG,610,GY(0)+5,'땅',{'font-size':13,'text-anchor':'middle'});
   const gclip='gc'+(++UID),gcp=el('clipPath',{id:gclip},defs);el('rect',{x:GX(-40),y:GY(10),width:GX(40)-GX(-40),height:GY(0)-GY(10)},gcp);
 
   const SEASONS={
@@ -878,8 +897,12 @@ const S3=(()=>{
     const kind=Dmax>0?(Dg>=.5?'hail':Dg>.05?'graupel':'rain'):(Ts<=1?'snow':'none');
     return{Ts,Tu,dT,up,upIdx,H0,top,Dmax,loss,Dg,kind};
   }
-  const h0txt=a=>a.H0===0?'지표':isFinite(a.H0)&&a.H0<=10?a.H0.toFixed(1)+' km':'10 km 넘음';
-  const kindTxt=a=>({hail:`우박 ${a.Dg.toFixed(1)} cm`,graupel:'작은 얼음',rain:'비 (녹음)',snow:'눈',none:'없음'})[a.kind];
+  // 구체적인 수치 대신 느낌으로 보여 주는 말
+  const h0txt=a=>a.H0===0?'땅(지표)':a.H0<4?'낮음':a.H0<6?'높음':'아주 높음';
+  const kindTxt=a=>({hail:'우박',graupel:'작은 얼음',rain:'비 (녹음)',snow:'눈',none:'없음'})[a.kind];
+  const tsTxt=t=>t<=0?'추워요':t<12?'서늘해요':t<22?'따뜻해요':t<30?'더워요':'아주 더워요';
+  const tuTxt=t=>t<=-22?'아주 차가워요':t<=-10?'차가워요':t<=-4?'조금 차가워요':'별로 안 차가워요';
+  const dTtxt=a=>a.dT>=35?'커요':a.dT>=30?'보통':'작아요';
   const kindCls=a=>({hail:'good',graupel:'',rain:'bad',snow:'snow',none:''})[a.kind];
 
   let cur=null,sel='early',disp=null,look='',pile=[],lastPh=[],popT=0,visited=new Set();
@@ -924,14 +947,14 @@ const S3=(()=>{
     const lapse=(Ts-Tu)/5;
     el('line',{x1:GX(Ts),y1:GY(0),x2:GX(Ts-lapse*10),y2:GY(10),stroke:INK,'stroke-width':4,'stroke-linecap':'round','clip-path':`url(#${gclip})`},gDyn);
     const pS={x:GX(Ts),y:GY(0)},pU={x:GX(Tu),y:GY(5)};
-    if(a.H0>0&&a.H0<=10){const y=GY(a.H0);el('circle',{cx:GX(0),cy:y,r:7,fill:'#FFD54A',stroke:INK,'stroke-width':3},gDyn);tag(gDyn,GX(0)+14,y,`0 ℃ 높이 ${a.H0.toFixed(1)} km`,{fs:14,anchor:'start',fill:'#FFF4D6'});}
+    if(a.H0>0&&a.H0<=10){const y=GY(a.H0);el('circle',{cx:GX(0),cy:y,r:7,fill:'#FFD54A',stroke:INK,'stroke-width':3},gDyn);tag(gDyn,GX(0)+14,y,`0 ℃ 높이: ${h0txt(a)}`,{fs:14,anchor:'start',fill:'#FFF4D6'});}
     else if(a.H0===0)tag(gDyn,GX(0)+12,GY(1.7),'0 ℃ 높이: 땅보다 낮아요',{fs:13,anchor:'start',fill:'#FFF4D6'});
-    else tag(gDyn,GX(0)+10,GY(9.3),'0 ℃ 높이: 10 km 넘음',{fs:13,anchor:'start',fill:'#FFF4D6'});
+    else tag(gDyn,GX(0)+10,GY(9.3),'0 ℃ 높이: 아주 높음',{fs:13,anchor:'start',fill:'#FFF4D6'});
     el('circle',{cx:pS.x,cy:pS.y,r:8,fill:'#E8553E',stroke:INK,'stroke-width':3},gDyn);
     el('circle',{cx:pU.x,cy:pU.y,r:8,fill:'#5B9BD5',stroke:INK,'stroke-width':3},gDyn);
-    tag(gDyn,pU.x-12,pU.y,`5 km ${Math.round(Tu)} ℃`,{fs:14,anchor:'end',fill:'#DDE9F7'});
-    const sx=pS.x>820;tag(gDyn,pS.x+(sx?-12:12),GY(.62),`지표 ${Math.round(Ts)} ℃`,{fs:14,anchor:sx?'end':'start',fill:'#FBE5E2'});
-    const dT=Math.round(Ts-Tu);tag(gDyn,872,82,`기온 차 ${dT} ℃`,{fs:15,fill:dT>=35?'#FBE5E2':dT>=30?'#FDF3DC':'#DDE9F7'});
+    tag(gDyn,pU.x-12,pU.y,'상공 기온',{fs:14,anchor:'end',fill:'#DDE9F7'});
+    const sx=pS.x>820;tag(gDyn,pS.x+(sx?-12:12),GY(.62),'땅 근처 기온',{fs:14,anchor:sx?'end':'start',fill:'#FBE5E2'});
+    const dT=Ts-Tu;tag(gDyn,864,82,`위아래 기온 차: ${dTtxt(a)}`,{fs:14,fill:dT>=35?'#FBE5E2':dT>=30?'#FDF3DC':'#DDE9F7'});
   }
   function drawParts(T){
     clear(partG);const a=cur;if(a.kind==='none')return;
@@ -964,15 +987,15 @@ const S3=(()=>{
   function setTarget(Ts,Tu,key){
     sel=key||null;cur=atm(Ts,Tu);pile=[];lastPh=[];
     if(!disp)disp={Ts,Tu};
-    $('#tsR').value=Ts;$('#tuR').value=Tu;$('#tsO').textContent=Ts+' ℃';$('#tuO').textContent=Tu+' ℃';
+    $('#tsR').value=Ts;$('#tuR').value=Tu;$('#tsO').textContent=tsTxt(Ts);$('#tuO').textContent=tuTxt(Tu);
     document.querySelectorAll('#s3seg button').forEach(b=>b.classList.toggle('sel',b.dataset.s===key));
     buildLook(key||(Ts<=0?'winter':Ts<16?'fall':Ts<=28?'early':'mid'));
     buildCloud(cur);
     if(key){visited.add(key);$('#s3badge').textContent=`${SEASONS[key].name} (${SEASONS[key].mon})`;$('#s3cap').innerHTML=`<span>${SEASONS[key].cap}</span>`;}
     else{
       $('#s3badge').textContent='직접 설정';const a=cur;
-      const res={hail:`<b>우박</b>(지름 약 ${a.Dg.toFixed(1)} cm)이 내려요!`,graupel:'작은 얼음 알갱이만 내려요.',rain:'얼음이 떨어지며 <b>녹아서 비</b>가 돼요.',snow:'<b>눈</b>이 내려요.',none:'적란운이 자라지 못해 <b>우박이 생기지 않아요</b>.'}[a.kind];
-      $('#s3cap').innerHTML=`<span>기온 차 <b>${Math.round(a.dT)} ℃</b> → 상승 기류 <b>${a.up}</b>, 0 ℃ 높이 <b>${h0txt(a)}</b> → ${res}</span>`;
+      const res={hail:'<b>우박</b>이 녹지 않고 땅까지 내려요!',graupel:'작은 얼음 알갱이만 내려요.',rain:'얼음이 떨어지며 <b>녹아서 비</b>가 돼요.',snow:'<b>눈</b>이 내려요.',none:'적란운이 자라지 못해 <b>우박이 생기지 않아요</b>.'}[a.kind];
+      $('#s3cap').innerHTML=`<span>위아래 기온 차 <b>${dTtxt(a)}</b> → 상승 기류 <b>${a.up}</b>, 0 ℃ 높이 <b>${h0txt(a)}</b> → ${res}</span>`;
     }
     renderTable();
     if(RM){disp={Ts,Tu};drawDyn(Ts,Tu);}
