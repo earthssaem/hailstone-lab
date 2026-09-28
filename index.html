@@ -714,15 +714,18 @@ const S2=(()=>{
   const trail=el('polyline',{fill:'none',stroke:HAIL,'stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'},trailG);
 
   const LV={weak:{U:45,w:2.5},mid:{U:105,w:4},strong:{U:165,w:5.5}};
-  const SPEED=.6,G=.16,MELT=.1,YCEIL=100,FULL=175;
+  const SPEED=.6,G=.16,MELT=.1,YCEIL=100,FULL=175,X0=340,XR=545,WIND=3;
   const VT=d=>58*Math.pow(Math.max(d,0),.7), rad=d=>d>0?3.5+d*4.6:5;
-  let lv='mid',U=LV.mid.U,st='idle',holding=false,heavy=false,u=0,x=400,y=Y0-14,D=.2,layers=[],cycles=0,dir=1,ext=0,pts=[],ptT=0,landT=0,flowPos=0,capKey='';
+  // 상승 기류 화살표(가운데)의 기울기: 높이 y에서 1만큼 올라갈 때 오른쪽으로 가는 양 (구름 밑은 비스듬히, 높은 곳은 거의 수직)
+  const TILT=[];{const tr=track(UP_PATHS[1]),n=Math.round(tr.L/6);let p=tr.at(0);for(let i=1;i<=n;i++){const q=tr.at(tr.L*i/n);if(p.y-q.y>.5)TILT.push({y:(p.y+q.y)/2,k:(q.x-p.x)/(p.y-q.y)});p=q;}}
+  const tilt=y=>{let b=TILT[TILT.length-1];for(const t of TILT)if(t.y<=y){b=t;break;}return Math.min(b.k,1.6);};
+  let lv='mid',U=LV.mid.U,st='idle',holding=false,heavy=false,u=0,x=X0,y=Y0-14,D=.2,layers=[],cycles=0,dir=1,ext=0,pts=[],ptT=0,landT=0,flowPos=0,capKey='';
   const R=rng(5),drops=[];
   for(let i=0;i<34;i++)drops.push({x:312+R()*276,y:YTOP+4+R()*(Y0-YTOP-8),e:el('circle',{r:3.4,fill:DROP,stroke:INK,'stroke-width':1.5},dropG)});
 
   function buildUps(){clear(upG);ups=UP_PATHS.map(d=>arrow(upG,d,'#F0907E',{w:LV[lv].w,soft:true}));tag(upG,118,356,'상승 기류',{fill:'#FBE5E2'});$('#s2capU').style.left=(U/FULL*100)+'%';}
   function reset(){
-    st='idle';heavy=false;u=0;x=400;y=Y0-14;layers=[{t:'seed',d:.2}];D=.2;cycles=0;dir=1;ext=y;pts=[];landT=0;
+    st='idle';heavy=false;u=0;x=X0;y=Y0-14;layers=[{t:'seed',d:.2}];D=.2;cycles=0;dir=1;ext=y;pts=[];landT=0;
     $('#s2pop').className='pop';$('#s2play').hidden=false;trail.setAttribute('points','');trailO.setAttribute('points','');
     document.querySelectorAll('#s2lv button').forEach(b=>b.disabled=false);$('#s2start').disabled=false;
     draw();hud();
@@ -805,7 +808,9 @@ const S2=(()=>{
       u+=((holding&&!heavy?U:0)-u)*Math.min(1,dt*5);
       let vy=(Math.max(VT(D),18)-u)*SPEED;
       y+=vy*dt;if(y<YCEIL){y=YCEIL;vy=0;}
-      x+=(vy>0?20:-15)*dt;if(x>545)x=545;if(x<355)x=355;
+      // 우박은 공기에 실려 움직여요: 올라갈 땐 상승 기류 화살표 방향을 따라가고,
+      // 구름 속 공기가 모루구름 쪽(오른쪽)으로 흐르니 오르내리는 동안 조금씩 오른쪽으로 밀려가요
+      x+=((vy<0?tilt(y)*-vy:0)+WIND)*clamp((XR-x)/80,0,1)*dt;
       if(y>=YTOP&&y<=Y0)grow(G*dt,y<YMID?'white':'clear');else if(y>Y0)melt(MELT/(.4+D)*dt);
       if(dir<0){if(y<ext)ext=y;else if(y-ext>18){dir=1;ext=y;cycles++;}}
       else{if(y>ext)ext=y;else if(ext-y>18){dir=-1;ext=y;}}
