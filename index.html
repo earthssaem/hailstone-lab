@@ -513,7 +513,7 @@ const S1=(()=>{
   function stoneIn(I,g,radii){clear(g);crossSection(g,I.cx,I.cy,radii,TYP.slice(0,radii.length),{ow:3});}
 
   const P3='M330,236 C336,190 360,146 392,140';
-  const SEG4=['M392,140 C412,140 400,262 420,262','M420,262 C440,262 432,134 452,134','M452,134 C472,134 464,262 484,262','M484,262 C504,262 496,128 520,128'];
+  const SEG4=['M392,140 C412,140 400,236 420,236','M420,236 C440,236 432,134 452,134','M452,134 C472,134 464,236 484,236','M484,236 C504,236 496,128 520,128'];
   const P4=SEG4.map((s,i)=>i?s.replace(/^M[\d.,]+ /,''):s).join(' ');
   const P5='M520,128 C548,128 562,196 572,252 S588,352 598,388';
   const tail=d=>' '+d.replace(/^M[\d.,]+ /,'');
@@ -533,7 +533,7 @@ const S1=(()=>{
 
   const STEPS=[
     {title:'적란운이 자라요',hold:2.5,dur:4.2,
-     cap:'햇볕에 땅이 뜨겁게 데워지면 따뜻한 공기가 <b>강한 상승 기류</b>가 되어 솟아올라요. 수증기가 식어 구름이 계속 쌓이면서 키가 아주 큰 <b>적란운</b>이 돼요.',
+     cap:'햇볕에 땅이 뜨겁게 데워지면 따뜻한 공기가 <b>강한 상승 기류</b>가 되어 솟아올라요. 공기가 올라가며 식으면 <b>수증기가 응결</b>해 구름이 생기고, 위로 계속 자라 키가 아주 큰 <b>적란운</b>이 돼요.',
      enter(){
        const lab=el('g',{opacity:0},dyn);v.lab=lab;
        el('line',{x1:893,y1:66,x2:893,y2:388,stroke:INK,'stroke-width':3,'stroke-dasharray':'2 8','stroke-linecap':'round'},lab);
@@ -611,7 +611,7 @@ const S1=(()=>{
        v.trail=hailPath(dyn,P345,{'stroke-dasharray':`${T34.L} ${T345.L+20}`});v.ch=el('g',{},dyn);v.shaft=el('g',{},dyn);v.pile=el('g',{opacity:0},dyn);v.fg=el('g',{},dyn);v.pg=el('g',{},dyn);
        const R=rng(33);v.stones=Array.from({length:14},()=>({x:556+R()*196,ph:R(),r:3.5+R()*3}));
        for(let i=0;i<16;i++){const x=520+R()*250,onCar=x>662&&x<742;el('circle',{cx:x,cy:(onCar?(x>690&&x<716?354:370):396)-R()*2,r:3+R()*2.5,fill:'#fff',stroke:INK,'stroke-width':2},v.pile);}
-       v.heavy=el('g',{opacity:0},dyn);tag(v.heavy,640,150,'상승 기류보다 무거워요!',{fs:15,fill:'#FFF4D6'});
+       v.heavy=el('g',{opacity:0},dyn);tag(v.heavy,640,150,'상승 기류가 떠받치지 못해요!',{fs:15,fill:'#FFF4D6'});
        v.hail=el('g',{opacity:0},dyn);tag(v.hail,482,374,'우박',{fs:19});
      },
      tick(t,T){
@@ -631,7 +631,7 @@ const S1=(()=>{
        v.pile.setAttribute('opacity',ease((t-3.2)/.8));v.hail.setAttribute('opacity',ease((t-3.3)/.4));
      }},
     {title:'우박을 잘라 보면',hold:4,dur:3.8,
-     cap:'우박을 잘라 보면 <b>양파처럼 여러 겹의 층</b>이 보여요. 구름 속에서 <b>상승과 하강을 여러 번 반복</b>하며 자랐다는 증거예요. 크기는 대부분 <b>1~5 cm</b>예요.',
+     cap:'우박을 잘라 보면 <b>양파처럼 여러 겹의 층</b>이 보여요. 구름 속을 <b>오르내리며 온도가 다른 곳을 여러 번 지나</b> 자랐다는 흔적이에요. 크기는 보통 지름 <b>0.5~5 cm</b>예요.',
      enter(){
        el('rect',{x:-10,y:-10,width:980,height:560,fill:'#FFFDF8','fill-opacity':.9},top);
        v.cs=el('g',{},top);v.lab=el('g',{opacity:0},top);
@@ -643,7 +643,7 @@ const S1=(()=>{
        card(64,'처음 얼음 알갱이 (씨앗)','여기서부터 자라기 시작했어요',255,228,'#fff');
        card(144,'하얀 층','아주 차가운 곳에서 순식간에 얼어 공기 방울이 갇혀요',344,166,'#fff');
        card(224,'투명한 층','덜 차가운 곳에서 천천히 얼어 맑은 얼음이 돼요',346,252,'#E6F4FB');
-       text(L,470,322,'우박 크기 비교 (대부분 1~5 cm)',{'font-size':17});
+       text(L,470,322,'우박 크기 비교 (보통 0.5~5 cm)',{'font-size':17});
        [[500,1,'1 cm 콩'],[580,2.5,'2.5 cm'],[680,4,'4 cm 탁구공'],[800,5,'5 cm']].forEach(a=>{
          el('circle',{cx:a[0],cy:372,r:a[1]*6,fill:'#fff',stroke:INK,'stroke-width':2.5},L);
          text(L,a[0],372+a[1]*6+18,a[2],{'font-size':14,'text-anchor':'middle','font-family':"'Noto Sans KR',sans-serif"});
@@ -805,7 +805,7 @@ const S2=(()=>{
     idle:'<b>▶ 시작</b>을 누르거나 <b>상승 기류 버튼을 꾹</b> 누르면 얼음 알갱이가 나타나요.',
     grow:'<b>과냉각 물방울</b>이 얼어붙고 있어요! 이 구역에 오래 머물수록 쑥쑥 커져요.',
     cold:'너무 높아요! <b>-40 ℃</b>보다 차가운 곳엔 물방울이 없어서 자라지 않아요.',
-    melt:'<b>0 ℃</b> 아래로 내려왔어요. 얼음이 <b>녹고 있어요</b>! 다시 꾹 눌러요.',
+    melt:'<b>0 ℃ 선</b>보다 아래로 내려왔어요. 따뜻해서 얼음이 <b>녹고 있어요</b>! 다시 꾹 눌러요.',
     heavy:'너무 무거워져서 <b>상승 기류가 떠받치지 못해요</b>. 떨어져요!',
     fall:'구름 밖으로 떨어지는 중… 따뜻한 공기 속에서 조금씩 녹아요.',
     done:'결과를 확인해요. <b>상승 기류 세기</b>를 바꿔서 다시 해 보세요!'
@@ -920,9 +920,9 @@ const S3=(()=>{
 
   const SEASONS={
     early:{name:'초여름',mon:'6월',Ts:24,Tu:-14,cap:'<b>초여름</b>: 땅은 햇볕에 뜨거운데 상공은 아직 차가워요. <b>기온 차가 커서</b> 강한 상승 기류가 생기고, 0 ℃ 높이가 낮아 <b>우박이 녹기 전에</b> 땅에 닿아요.'},
-    mid:{name:'한여름',mon:'8월',Ts:32,Tu:-2,cap:'<b>한여름</b>: 상공까지 따뜻해 <b>0 ℃ 높이가 아주 높아요</b>. 구름 속 얼음이 떨어지는 동안 두꺼운 따뜻한 층을 지나며 <b>녹아서 비</b>가 돼요.'},
+    mid:{name:'한여름',mon:'8월',Ts:32,Tu:-2,cap:'<b>한여름</b>: 상공까지 따뜻해 <b>0 ℃ 높이가 높아요</b>. 구름 속 얼음이 떨어지는 동안 두꺼운 따뜻한 층을 지나며 <b>녹아서 비</b>가 돼요.'},
     fall:{name:'가을',mon:'10월',Ts:18,Tu:-20,cap:'<b>가을</b>: 땅은 아직 따뜻한데 상공으로 <b>찬 공기</b>가 들어와요. 기온 차가 커서 <b>강한 상승 기류</b>가 생기고, 0 ℃ 높이도 낮아 <b>우박</b>이 내려요.'},
-    winter:{name:'겨울',mon:'1월',Ts:-1,Tu:-26,cap:'<b>겨울</b>: 땅이 차가워 공기가 잘 데워지지 않아요. 위아래 <b>기온 차가 작아</b> 상승 기류가 약하고 적란운이 자라지 못해 <b>눈</b>이 내려요.'},
+    winter:{name:'겨울',mon:'1월',Ts:-1,Tu:-26,cap:'<b>겨울</b>: 땅이 차가워 공기가 잘 데워지지 않아요. 위아래 <b>기온 차가 작아</b> 상승 기류가 약하고 적란운이 자라지 못해요. 땅까지 영하라서 얼음이 녹지 않고 <b>눈</b>으로 내려요.'},
   };
   const LOOK={
     early:{sky:SKY,sun:23,sunC:'#FFD54A',ground:'#9DD16C',tree:'#5DAF4E'},
@@ -935,14 +935,14 @@ const S3=(()=>{
     const up=dT>=35?'강함':dT>=30?'보통':'약함',upIdx=clamp((dT-24)/16,0,1);
     const H0=Ts<=0?0:(lapse>0?Ts/lapse:Infinity);
     const top=clamp(2+(dT-22)*.5,2.6,10.4);
-    let Dmax=clamp((dT-28)*.36,0,6);if(!(top>H0+2))Dmax=0;
+    let Dmax=clamp((dT-28)*.36,0,6);const cold=top>H0+2;if(!cold)Dmax=0; // 구름 윗부분이 0 ℃보다 충분히 차가워야 우박이 자람
     const loss=isFinite(H0)?.06*H0*Math.max(0,Ts)/2:99,Dg=Math.max(0,Dmax-loss);
-    const kind=Dmax>0?(Dg>=.5?'hail':Dg>.05?'graupel':'rain'):(Ts<=1?'snow':'none');
-    return{Ts,Tu,dT,up,upIdx,H0,top,Dmax,loss,Dg,kind};
+    const kind=Dmax>0?(Dg>=.5?'hail':Dg>.05?'graupel':'rain'):Ts<=1?(Tu<=0?'snow':'none'):(dT>=30?'rain':'none');
+    return{Ts,Tu,dT,up,upIdx,H0,top,Dmax,loss,Dg,kind,cold};
   }
   // 구체적인 수치 대신 느낌으로 보여 주는 말
   const h0txt=a=>a.H0===0?'땅(지표)':a.H0<4?'낮음':a.H0<6?'높음':'아주 높음';
-  const kindTxt=a=>({hail:'우박',graupel:'작은 얼음',rain:'비 (녹음)',snow:'눈',none:'없음'})[a.kind];
+  const kindTxt=a=>({hail:'우박',graupel:'작은 얼음',rain:a.cold?'비 (녹음)':'비',snow:'눈',none:'없음'})[a.kind];
   const tsTxt=t=>t<=0?'추워요':t<12?'서늘해요':t<22?'따뜻해요':t<30?'더워요':'아주 더워요';
   const tuTxt=t=>t<=-22?'아주 차가워요':t<=-10?'차가워요':t<=-4?'조금 차가워요':'별로 안 차가워요';
   const dTtxt=a=>a.dT>=35?'커요':a.dT>=30?'보통':'작아요';
@@ -1037,7 +1037,7 @@ const S3=(()=>{
     if(key){visited.add(key);$('#s3badge').textContent=`${SEASONS[key].name} (${SEASONS[key].mon})`;$('#s3cap').innerHTML=`<span>${SEASONS[key].cap}</span>`;}
     else{
       $('#s3badge').textContent='직접 설정';const a=cur;
-      const res={hail:'<b>우박</b>이 녹지 않고 땅까지 내려요!',graupel:'작은 얼음 알갱이만 내려요.',rain:'얼음이 떨어지며 <b>녹아서 비</b>가 돼요.',snow:'<b>눈</b>이 내려요.',none:'적란운이 자라지 못해 <b>우박이 생기지 않아요</b>.'}[a.kind];
+      const res={hail:'<b>우박</b>이 녹지 않고 땅까지 내려요!',graupel:'작은 얼음 알갱이만 내려요.',rain:a.cold?'얼음이 떨어지며 <b>녹아서 비</b>가 돼요.':'구름 윗부분이 충분히 차갑지 않아 얼음이 크게 자라지 못하고 <b>비</b>가 내려요.',snow:'<b>눈</b>이 내려요.',none:'적란운이 자라지 못해 <b>우박이 생기지 않아요</b>.'}[a.kind];
       $('#s3cap').innerHTML=`<span>위아래 기온 차 <b>${dTtxt(a)}</b> → 상승 기류 <b>${a.up}</b>, 0 ℃ 높이 <b>${h0txt(a)}</b> → ${res}</span>`;
     }
     renderTable();
