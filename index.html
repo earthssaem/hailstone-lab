@@ -903,20 +903,14 @@ const S2=(()=>{
 const S3=(()=>{
   const svg=$('#s3svg'),defs=el('defs',{},svg);
   const sky=el('rect',{x:-10,y:-10,width:980,height:560,fill:SKY},svg);
-  const sunG=el('g',{},svg),heatG=el('g',{},svg),warmG=el('g',{},svg),groundG=el('g',{},svg),cloudG=el('g',{},svg),arrG=el('g',{},svg),zeroG=el('g',{},svg),partG=el('g',{},svg),pileG=el('g',{},svg),graphG=el('g',{},svg),gDyn=el('g',{},svg);
-  const GX=t=>780+t*3.5,GY=km=>400-km*34;
-  // 그래프 틀
-  el('rect',{x:598,y:20,width:348,height:420,rx:14,fill:'#fff',stroke:INK,'stroke-width':3},graphG);
-  text(graphG,780,45,'높이에 따른 기온',{'font-size':18,'text-anchor':'middle'});
-  for(let t=-40;t<=40;t+=20)el('line',{x1:GX(t),y1:GY(10),x2:GX(t),y2:GY(0),stroke:t===0?INK:'#E3EAF0','stroke-width':t===0?2.5:1.5,'stroke-dasharray':t===0?'6 5':''},graphG);
-  for(let k=0;k<=10;k+=2)el('line',{x1:GX(-40),y1:GY(k),x2:GX(40),y2:GY(k),stroke:k?'#E3EAF0':INK,'stroke-width':k?1.5:3},graphG);
-  text(graphG,GX(0),420,'0 ℃',{'font-size':14,'text-anchor':'middle'});
-  text(graphG,GX(-40),420,'← 차가움',{'font-size':14,'text-anchor':'start',fill:'#2A5F9E'});
-  text(graphG,GX(40),420,'따뜻함 →',{'font-size':14,'text-anchor':'end',fill:'#B8321F'});
-  el('line',{x1:622,y1:GY(0),x2:622,y2:GY(9.6),stroke:INK,'stroke-width':2.5},graphG);el('polygon',{points:`622,${GY(10)} 616,${GY(9.4)} 628,${GY(9.4)}`,fill:INK},graphG);
-  text(graphG,614,GY(5),'높이',{'font-size':14,'text-anchor':'middle',transform:`rotate(-90 614 ${GY(5)})`});
-  text(graphG,610,GY(0)+5,'땅',{'font-size':13,'text-anchor':'middle'});
-  const gclip='gc'+(++UID),gcp=el('clipPath',{id:gclip},defs);el('rect',{x:GX(-40),y:GY(10),width:GX(40)-GX(-40),height:GY(0)-GY(10)},gcp);
+  const sunG=el('g',{},svg),heatG=el('g',{},svg),warmG=el('g',{},svg),groundG=el('g',{},svg),cloudG=el('g',{},svg),arrG=el('g',{},svg),zeroG=el('g',{},svg),partG=el('g',{},svg),pileG=el('g',{},svg),barG=el('g',{},svg);
+  const GY=km=>400-km*34,CX=520;
+  // 왼쪽 온도 막대: 높이마다 기온을 색으로 보여 줘요 (아래가 땅, 위가 높은 하늘)
+  const BX=34,BW=18,BT=GY(8.8),BB=396,kB=(400-BB)/34,kT=(400-BT)/34,gid='tg'+(++UID);
+  const grad=el('linearGradient',{id:gid,gradientUnits:'userSpaceOnUse',x1:0,y1:BB,x2:0,y2:BT},defs);
+  el('rect',{x:BX,y:BT,width:BW,height:BB-BT,rx:9,fill:`url(#${gid})`,stroke:INK,'stroke-width':3},barG);
+  const barDyn=el('g',{},barG);
+  const tcol=T=>T>=0?mix('#FBD3C6','#E0452F',clamp(T/36,0,1)):mix('#CFE6F7','#2F6DB5',clamp(-T/40,0,1));
 
   const SEASONS={
     early:{name:'초여름',mon:'6월',Ts:24,Tu:-14,cap:'<b>초여름</b>: 땅은 햇볕에 뜨거운데 상공은 아직 차가워요. <b>기온 차가 커서</b> 강한 상승 기류가 생기고, 0 ℃ 높이가 낮아 <b>우박이 녹기 전에</b> 땅에 닿아요.'},
@@ -949,58 +943,60 @@ const S3=(()=>{
   const kindCls=a=>({hail:'good',graupel:'',rain:'bad',snow:'snow',none:''})[a.kind];
 
   let cur=null,sel='early',disp=null,look='',pile=[],lastPh=[],popT=0,visited=new Set();
-  const N=9,PR=rng(99),PP=Array.from({length:N},(_,i)=>({x:208+PR()*118,ph:(i+PR()*.6)/N,sw:PR()*6.28}));
+  const N=9,PR=rng(99),PP=Array.from({length:N},(_,i)=>({x:CX-57+PR()*118,ph:(i+PR()*.6)/N,sw:PR()*6.28}));
 
+  const TREES=[[150,.9],[845,1],[920,.85]];
   function buildLook(key){
     if(key===look)return;look=key;const L=LOOK[key];
-    sky.setAttribute('fill',L.sky);clear(sunG);drawSun(sunG,562,124,L.sun,L.sunC);
+    sky.setAttribute('fill',L.sky);clear(sunG);drawSun(sunG,885,96,L.sun,L.sunC);
     clear(groundG);drawGround(groundG,L.ground);
-    [[60,1],[140,.85],[470,.9],[540,1]].forEach(a=>drawTree(groundG,a[0],402,L.tree,a[1]));
-    if(key==='winter')[[60,1],[140,.85],[470,.9],[540,1]].forEach(a=>el('ellipse',{cx:a[0],cy:402-2,rx:16*a[1],ry:4,fill:'#fff',stroke:INK,'stroke-width':2},groundG));
+    TREES.forEach(a=>drawTree(groundG,a[0],402,L.tree,a[1]));
+    if(key==='winter')TREES.forEach(a=>el('ellipse',{cx:a[0],cy:402-2,rx:16*a[1],ry:4,fill:'#fff',stroke:INK,'stroke-width':2},groundG));
   }
   function buildCloud(a){
     clear(cloudG);clear(arrG);
     const topY=GY(a.top),baseY=GY(1.2),hw=Math.round(78+a.upIdx*56),anvil=a.top>=7.5;
-    drawCloud(cloudG,defs,{cx:265,base:baseY,top:topY,hw,anvil,seed:17},a.Ts<=0?{mid:'#DCE3EA',shT:'#C8D2DC',shB:'#B3BFCA',hiB:'#E6ECF1'}:null);
+    drawCloud(cloudG,defs,{cx:CX,base:baseY,top:topY,hw,anvil,seed:17},a.Ts<=0?{mid:'#DCE3EA',shT:'#C8D2DC',shB:'#B3BFCA',hiB:'#E6ECF1'}:null);
     popT=0;
     if(a.upIdx>.03){
       const w=3+a.upIdx*6,endY=Math.min(baseY-24,lerp(baseY-10,topY+80,a.upIdx));
-      arrow(arrG,`M22,398 C100,392 170,382 200,${baseY-6} S224,${(endY+baseY)/2} 228,${endY}`,RED,{w});
-      if(a.upIdx>.4)arrow(arrG,`M84,410 C150,404 220,392 252,${baseY-10} S276,${(endY+baseY)/2+10} 280,${endY+14}`,RED,{w});
+      arrow(arrG,`M${CX-243},398 C${CX-165},392 ${CX-95},382 ${CX-65},${baseY-6} S${CX-41},${(endY+baseY)/2} ${CX-37},${endY}`,RED,{w});
+      if(a.upIdx>.4)arrow(arrG,`M${CX-181},410 C${CX-115},404 ${CX-45},392 ${CX-13},${baseY-10} S${CX+11},${(endY+baseY)/2+10} ${CX+15},${endY+14}`,RED,{w});
     }
     const n=Math.round(clamp(a.Ts,0,36)/7);clear(heatG);
     for(let i=0;i<n;i++)el('path',{d:squiggle(),fill:'none',stroke:'#E8553E','stroke-width':3.5,'stroke-linecap':'round','data-i':i},heatG);
   }
   function drawDyn(Ts,Tu){
-    const a=atm(Ts,Tu);
+    const a=atm(Ts,Tu),lapse=(Ts-Tu)/5;
     // 0 ℃ 선, 녹는 구간
     clear(zeroG);clear(warmG);
-    if(a.H0>0&&a.H0<=10.2){
-      const y=GY(a.H0);
-      el('rect',{x:0,y,width:598,height:400-y,fill:'#FFD3BF','fill-opacity':.55},warmG);
-      el('line',{x1:0,y1:y,x2:GX(0),y2:y,stroke:INK,'stroke-width':3,'stroke-dasharray':'14 10'},zeroG);
-      tag(zeroG,40,y,'0 ℃',{fs:16});
-      if(a.H0>.5){const bx=520,g=el('g',{},zeroG);
+    if(a.H0>0){
+      const y=a.H0<=kT?GY(a.H0):-10; // 0 ℃가 막대 꼭대기보다 높으면 보이는 곳 전체가 0 ℃보다 따뜻해요
+      el('rect',{x:-10,y,width:980,height:400-y,fill:'#FFD3BF','fill-opacity':.55},warmG);
+      if(a.H0<=kT)el('line',{x1:BX+BW,y1:y,x2:960,y2:y,stroke:INK,'stroke-width':3,'stroke-dasharray':'14 10'},zeroG);
+      if(a.H0>.5&&a.H0<=kT){const bx=CX+255,g=el('g',{},zeroG);
         el('line',{x1:bx,y1:y+9,x2:bx,y2:391,stroke:INK,'stroke-width':3},g);
         el('polygon',{points:`${bx},${y+2} ${bx-7},${y+13} ${bx+7},${y+13}`,fill:INK},g);el('polygon',{points:`${bx},${398} ${bx-7},${387} ${bx+7},${387}`,fill:INK},g);
         tag(g,bx,(y+398)/2,'녹는 구간',{fs:15,fill:'#FBE5E2'});}
     }
-    // 그래프
-    clear(gDyn);
-    const lapse=(Ts-Tu)/5;
-    el('line',{x1:GX(Ts),y1:GY(0),x2:GX(Ts-lapse*10),y2:GY(10),stroke:INK,'stroke-width':4,'stroke-linecap':'round','clip-path':`url(#${gclip})`},gDyn);
-    const pS={x:GX(Ts),y:GY(0)},pU={x:GX(Tu),y:GY(5)};
-    if(a.H0>0&&a.H0<=10){const y=GY(a.H0);el('circle',{cx:GX(0),cy:y,r:7,fill:'#FFD54A',stroke:INK,'stroke-width':3},gDyn);tag(gDyn,GX(0)+14,y,`0 ℃ 높이: ${h0txt(a)}`,{fs:14,anchor:'start',fill:'#FFF4D6'});}
-    else if(a.H0===0)tag(gDyn,GX(0)+12,GY(1.7),'0 ℃ 높이: 땅보다 낮아요',{fs:13,anchor:'start',fill:'#FFF4D6'});
-    else tag(gDyn,GX(0)+10,GY(9.3),'0 ℃ 높이: 아주 높음',{fs:13,anchor:'start',fill:'#FFF4D6'});
-    el('circle',{cx:pS.x,cy:pS.y,r:8,fill:'#E8553E',stroke:INK,'stroke-width':3},gDyn);
-    el('circle',{cx:pU.x,cy:pU.y,r:8,fill:'#5B9BD5',stroke:INK,'stroke-width':3},gDyn);
-    tag(gDyn,pU.x-12,pU.y,'상공 기온',{fs:14,anchor:'end',fill:'#DDE9F7'});
-    const sx=pS.x>820;tag(gDyn,pS.x+(sx?-12:12),GY(.62),'땅 근처 기온',{fs:14,anchor:sx?'end':'start',fill:'#FBE5E2'});
-    const dT=Ts-Tu;tag(gDyn,864,82,`위아래 기온 차: ${dTtxt(a)}`,{fs:14,fill:dT>=35?'#FBE5E2':dT>=30?'#FDF3DC':'#DDE9F7'});
+    // 온도 막대 색 (0 ℃에서 따뜻한 색 ↔ 차가운 색이 또렷이 나뉘게)
+    clear(grad);const st=[];
+    for(let i=0;i<=12;i++){const km=kB+(kT-kB)*i/12;st.push([km,tcol(Ts-lapse*km)]);}
+    if(a.H0>kB&&a.H0<kT)st.push([a.H0,tcol(0)],[a.H0,tcol(-1e-6)]);
+    st.sort((p,q)=>p[0]-q[0]).forEach(p=>el('stop',{offset:clamp((BB-GY(p[0]))/(BB-BT),0,1).toFixed(4),'stop-color':p[1]},grad));
+    // 막대 옆 이름표
+    clear(barDyn);
+    const tx=BX+BW+10,yU=GY(5);let yUt=yU;
+    if(a.H0>kB&&a.H0<=kT){const y0=GY(a.H0);el('line',{x1:BX+BW,y1:y0,x2:tx,y2:y0,stroke:INK,'stroke-width':3},barDyn);tag(barDyn,tx,y0,'0 ℃',{fs:15,anchor:'start'});if(Math.abs(y0-yU)<30)yUt=y0<yU?y0+30:y0-30;}
+    else if(a.H0>kT)tag(barDyn,tx,BT+4,'0 ℃는 더 위에',{fs:14,anchor:'start'});
+    el('line',{x1:BX+BW,y1:yU,x2:tx,y2:yUt,stroke:INK,'stroke-width':3},barDyn);
+    tag(barDyn,tx,yUt,`상공: ${tuTxt(Tu)}`,{fs:15,anchor:'start',fill:'#DDE9F7'});
+    el('line',{x1:BX+BW/2,y1:BB,x2:BX+BW/2,y2:412,stroke:INK,'stroke-width':3},barDyn);
+    tag(barDyn,BX-4,425,`땅 근처: ${tsTxt(Ts)}`,{fs:15,anchor:'start',fill:'#FBE5E2'});
+    tag(barDyn,BX-4,463,`위아래 기온 차: ${dTtxt(a)}`,{fs:15,anchor:'start',fill:a.dT>=35?'#FBE5E2':a.dT>=30?'#FDF3DC':'#DDE9F7'});
   }
   function drawParts(T){
-    clear(partG);const a=cur;if(a.kind==='none')return;
+    clear(partG);clear(pileG);const a=cur;if(a.kind==='none')return;
     const topY=GY(a.top),baseY=GY(1.2),y0=a.H0>0&&isFinite(a.H0)?GY(a.H0):400;
     const ys=a.kind==='snow'?baseY-6:clamp(y0-50,topY+40,baseY-10);
     for(let i=0;i<N;i++){
@@ -1050,9 +1046,9 @@ const S3=(()=>{
     if(Math.abs(disp.Ts-tg.Ts)>.02||Math.abs(disp.Tu-tg.Tu)>.02||dirty){
       const k=RM?1:Math.min(1,dt*6);disp.Ts=lerp(disp.Ts,tg.Ts,k);disp.Tu=lerp(disp.Tu,tg.Tu,k);drawDyn(disp.Ts,disp.Tu);dirty=false;
     }
-    if(popT<1&&!RM){popT=Math.min(1,popT+dt*2.5);const s=.9+.1*ease(popT),by=GY(1.2);cloudG.setAttribute('transform',`translate(265,${by}) scale(${s.toFixed(3)}) translate(-265,${-by})`);cloudG.setAttribute('opacity',ease(popT*1.4).toFixed(2));}
+    if(popT<1&&!RM){popT=Math.min(1,popT+dt*2.5);const s=.9+.1*ease(popT),by=GY(1.2);cloudG.setAttribute('transform',`translate(${CX},${by}) scale(${s.toFixed(3)}) translate(${-CX},${-by})`);cloudG.setAttribute('opacity',ease(popT*1.4).toFixed(2));}
     else{cloudG.removeAttribute('transform');cloudG.setAttribute('opacity',1);}
-    heatG.querySelectorAll('path').forEach((p,i)=>{const ph=RM?.3:(T*.55+i*.23)%1;p.setAttribute('transform',`translate(${40+i*44},${398-ph*44})`);p.setAttribute('opacity',(1-ph).toFixed(2));});
+    heatG.querySelectorAll('path').forEach((p,i)=>{const ph=RM?.3:(T*.55+i*.23)%1;p.setAttribute('transform',`translate(${CX-225+i*44},${398-ph*44})`);p.setAttribute('opacity',(1-ph).toFixed(2));});
     drawParts(RM?0:T);
   }
   document.querySelectorAll('#s3seg button').forEach(b=>b.addEventListener('click',()=>{const s=SEASONS[b.dataset.s];setTarget(s.Ts,s.Tu,b.dataset.s);}));
