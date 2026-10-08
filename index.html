@@ -252,7 +252,7 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
       <div class="stage">
         <div class="stage-wrap">
           <svg id="s3svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid meet" role="img" aria-label="계절에 따른 기온 분포와 우박"></svg>
-          <div class="badge" id="s3badge">초여름</div>
+          <div class="badge" id="s3badge">봄</div>
         </div>
         <div class="caption" id="s3cap" aria-live="polite"></div>
       </div>
@@ -260,8 +260,8 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
         <div class="card">
           <h3>① 계절 고르기</h3>
           <div class="seg" id="s3seg">
-            <button data-s="early">초여름<small>6월</small></button>
-            <button data-s="mid">한여름<small>8월</small></button>
+            <button data-s="spring">봄<small>5월</small></button>
+            <button data-s="summer">여름<small>8월</small></button>
             <button data-s="fall">가을<small>10월</small></button>
             <button data-s="winter">겨울<small>1월</small></button>
           </div>
@@ -283,7 +283,7 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2
     </div>
   </section>
 </main>
-<footer class="site-foot">© 2026 제작: earthssaem</footer>
+<footer class="site-foot">© 2026 제작: 김연경(earthssaem@gmail.com)</footer>
 
 <script>
 (()=>{
@@ -913,14 +913,14 @@ const S3=(()=>{
   const tcol=T=>T>=0?mix('#FBD3C6','#E0452F',clamp(T/36,0,1)):mix('#CFE6F7','#2F6DB5',clamp(-T/40,0,1));
 
   const SEASONS={
-    early:{name:'초여름',mon:'6월',Ts:24,Tu:-14,cap:'<b>초여름</b>: 땅은 햇볕에 뜨거운데 상공은 아직 차가워요. <b>기온 차가 커서</b> 강한 상승 기류가 생기고, 0 ℃ 높이가 낮아 <b>우박이 녹기 전에</b> 땅에 닿아요.'},
-    mid:{name:'한여름',mon:'8월',Ts:32,Tu:-2,cap:'<b>한여름</b>: 상공까지 따뜻해 <b>0 ℃ 높이가 높아요</b>. 구름 속 얼음이 떨어지는 동안 두꺼운 따뜻한 층을 지나며 <b>녹아서 비</b>가 돼요.'},
-    fall:{name:'가을',mon:'10월',Ts:18,Tu:-20,cap:'<b>가을</b>: 땅은 아직 따뜻한데 상공으로 <b>찬 공기</b>가 들어와요. 기온 차가 커서 <b>강한 상승 기류</b>가 생기고, 0 ℃ 높이도 낮아 <b>우박</b>이 내려요.'},
+    spring:{name:'봄',mon:'5월',Ts:24,Tu:-14,cap:'<b>봄</b>: 땅은 햇볕에 빨리 데워지는데 상공에는 아직 <b>겨울의 찬 공기</b>가 남아 있어요. <b>기온 차가 커서</b> 강한 상승 기류가 생기고, 0 ℃ 높이가 낮아 <b>우박이 녹기 전에</b> 땅에 닿아요.'},
+    summer:{name:'여름',mon:'8월',Ts:32,Tu:-2,cap:'<b>여름</b>: 상공까지 따뜻해 <b>0 ℃ 높이가 높아요</b>. 구름 속 얼음이 떨어지는 동안 두꺼운 따뜻한 층을 지나며 <b>녹아서 비</b>가 돼요.'},
+    fall:{name:'가을',mon:'10월',Ts:18,Tu:-20,cap:'<b>가을</b>: 땅에는 아직 <b>여름의 열기</b>가 남아 있는데 상공으로 <b>찬 공기</b>가 먼저 들어와요. 기온 차가 커서 <b>강한 상승 기류</b>가 생기고, 0 ℃ 높이도 낮아 <b>우박</b>이 내려요.'},
     winter:{name:'겨울',mon:'1월',Ts:-1,Tu:-26,cap:'<b>겨울</b>: 땅이 차가워 공기가 잘 데워지지 않아요. 위아래 <b>기온 차가 작아</b> 상승 기류가 약하고 적란운이 자라지 못해요. 땅까지 영하라서 얼음이 녹지 않고 <b>눈</b>으로 내려요.'},
   };
   const LOOK={
-    early:{sky:SKY,sun:23,sunC:'#FFD54A',ground:'#9DD16C',tree:'#5DAF4E'},
-    mid:{sky:SKY,sun:26,sunC:'#FFC93C',ground:'#6DB852',tree:'#3F8F3C'},
+    spring:{sky:SKY,sun:22,sunC:'#FFD54A',ground:'#A9DB78',tree:'#F5A3C0'},
+    summer:{sky:SKY,sun:26,sunC:'#FFC93C',ground:'#6DB852',tree:'#3F8F3C'},
     fall:{sky:SKY,sun:20,sunC:'#FFD54A',ground:'#E5B454',tree:'#E27B35'},
     winter:{sky:'#D3E6F0',sun:16,sunC:'#FFE6A0',ground:'#F3F7FA',tree:null},
   };
@@ -942,7 +942,7 @@ const S3=(()=>{
   const dTtxt=a=>a.dT>=35?'커요':a.dT>=30?'보통':'작아요';
   const kindCls=a=>({hail:'good',graupel:'',rain:'bad',snow:'snow',none:''})[a.kind];
 
-  let cur=null,sel='early',disp=null,look='',pile=[],lastPh=[],popT=0,visited=new Set();
+  let cur=null,sel='spring',disp=null,look='',pile=[],lastPh=[],popT=0,visited=new Set();
   const N=9,PR=rng(99),PP=Array.from({length:N},(_,i)=>({x:CX-57+PR()*118,ph:(i+PR()*.6)/N,sw:PR()*6.28}));
 
   const TREES=[[150,.9],[845,1],[920,.85]];
@@ -1021,14 +1021,14 @@ const S3=(()=>{
     }
     const n=visited.size,note=$('#s3note');
     if(n<4){note.className='note';note.innerHTML=`네 계절을 모두 눌러 비교해 보세요. <b>(${n}/4)</b>`;}
-    else{note.className='note done';note.innerHTML='<b>정리</b> 우박이 내리려면 ① 위아래 기온 차가 커서 <b>강한 상승 기류</b>가 생기고 ② <b>0 ℃ 높이가 낮아</b> 떨어지며 다 녹지 않아야 해요. <b>초여름·가을</b>이 딱 그래요!';}
+    else{note.className='note done';note.innerHTML='<b>정리</b> 우박이 내리려면 ① 위아래 기온 차가 커서 <b>강한 상승 기류</b>가 생기고 ② <b>0 ℃ 높이가 낮아</b> 떨어지며 다 녹지 않아야 해요. <b>봄·가을</b>이 딱 그래요! 봄엔 상공에 겨울 찬 공기가 남아 있고, 가을엔 상공으로 찬 공기가 먼저 들어와요.';}
   }
   function setTarget(Ts,Tu,key){
     sel=key||null;cur=atm(Ts,Tu);pile=[];lastPh=[];
     if(!disp)disp={Ts,Tu};
     $('#tsR').value=Ts;$('#tuR').value=Tu;$('#tsO').textContent=tsTxt(Ts);$('#tuO').textContent=tuTxt(Tu);
     document.querySelectorAll('#s3seg button').forEach(b=>b.classList.toggle('sel',b.dataset.s===key));
-    buildLook(key||(Ts<=0?'winter':Ts<16?'fall':Ts<=28?'early':'mid'));
+    buildLook(key||(Ts<=0?'winter':Ts<16?'fall':Ts<=28?'spring':'summer'));
     buildCloud(cur);
     if(key){visited.add(key);$('#s3badge').textContent=`${SEASONS[key].name} (${SEASONS[key].mon})`;$('#s3cap').innerHTML=`<span>${SEASONS[key].cap}</span>`;}
     else{
@@ -1053,7 +1053,7 @@ const S3=(()=>{
   }
   document.querySelectorAll('#s3seg button').forEach(b=>b.addEventListener('click',()=>{const s=SEASONS[b.dataset.s];setTarget(s.Ts,s.Tu,b.dataset.s);}));
   ['tsR','tuR'].forEach(id=>$('#'+id).addEventListener('input',()=>setTarget(+$('#tsR').value,+$('#tuR').value,null)));
-  setTarget(24,-14,'early');
+  setTarget(24,-14,'spring');
   return{tick};
 })();
 
