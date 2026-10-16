@@ -28,6 +28,10 @@ button:disabled{cursor:default;opacity:.45}
 .brand{display:flex;align-items:baseline;gap:10px;min-width:0;white-space:nowrap}
 .brand h1{font-family:var(--display);font-weight:400;font-size:clamp(19px,3.1vw,30px);margin:0;letter-spacing:-.5px}
 .brand .sub{font-size:clamp(11px,1.7vw,16px);color:var(--ink-2);border-left:2px solid rgba(36,48,58,.25);padding-left:10px;overflow:hidden;text-overflow:ellipsis}
+/* 제목 부분(앱 이름·부제)을 누르면 처음 화면으로 */
+a.brand{color:inherit;text-decoration:none;border-radius:16px;margin:-4px -8px;padding:4px 8px;-webkit-tap-highlight-color:transparent}
+@media (hover:hover){a.brand:hover h1{color:var(--accent)}}   /* 터치 화면에서는 누른 뒤 색이 남지 않게 */
+a.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* 폴더 모양 탭 */
 .tabs{display:flex;gap:6px;max-width:1240px;margin:6px auto 0;padding:0 36px 0 16px;overflow-x:auto;scrollbar-width:none;width:100%}
@@ -172,7 +176,7 @@ footer .hub:hover{color:var(--ink);text-decoration-color:currentColor}
 </head>
 <body>
 <header class="top">
-  <div class="brand"><h1>우박 탐구실</h1><span class="sub">적란운 속 얼음 알갱이는 어떻게 우박이 될까?</span></div>
+  <a class="brand" id="homeLink" href="#" title="처음 화면으로" aria-label="우박 탐구실 — 처음 화면으로"><h1>우박 탐구실</h1><span class="sub">적란운 속 얼음 알갱이는 어떻게 우박이 될까?</span></a>
 </header>
 <nav class="tabs" role="tablist" aria-label="활동 고르기">
   <button class="tab active" data-tab="1" role="tab" id="tab1" aria-selected="true" aria-controls="panel1"><span class="num">1</span><span class="long">우박이 생기는 과정</span><span class="short">생기는 과정</span></button>
@@ -677,10 +681,11 @@ const S1=(()=>{
     tick(performance.now()/1000);
   }
   function stopAuto(){st.auto=false;$('#s1auto').textContent='▶ 자동 재생';}
+  function startAuto(){st.auto=true;$('#s1auto').textContent='⏸ 멈춤';}
   $('#s1prev').addEventListener('click',()=>{stopAuto();go(st.i-1);});
   $('#s1next').addEventListener('click',()=>{stopAuto();go(st.i+1);});
   $('#s1reset').addEventListener('click',()=>{stopAuto();go(0);});
-  $('#s1auto').addEventListener('click',()=>{if(st.auto){stopAuto();return;}st.auto=true;$('#s1auto').textContent='⏸ 멈춤';if(st.i===STEPS.length-1)go(0);else go(st.i);});
+  $('#s1auto').addEventListener('click',()=>{if(st.auto){stopAuto();return;}startAuto();if(st.i===STEPS.length-1)go(0);else go(st.i);});
   if(!st.auto)$('#s1auto').textContent='▶ 자동 재생';
   let flowPos=0,lastT=0;
   function tick(T){
@@ -690,7 +695,9 @@ const S1=(()=>{
     lastT=T;
     if(st.auto&&T-st.t0>s.dur+s.hold){if(st.i<STEPS.length-1)go(st.i+1);else stopAuto();}
   }
-  return{enter(){go(st.i);},tick,go,key(k){if(k==='ArrowRight'){stopAuto();go(st.i+1);}if(k==='ArrowLeft'){stopAuto();go(st.i-1);}}};
+  // 처음 화면: 1단계 · 자동 재생은 처음 열 때와 같게(동작 줄이기면 꺼 둠)
+  function home(){if(RM)stopAuto();else startAuto();go(0);}
+  return{enter(){go(st.i);},tick,go,home,key(k){if(k==='ArrowRight'){stopAuto();go(st.i+1);}if(k==='ArrowLeft'){stopAuto();go(st.i-1);}}};
 })();
 
 /* ================= 2탭: 우박 만들기 체험 ================= */
@@ -1061,12 +1068,20 @@ const S3=(()=>{
 
 /* ================= 탭 전환 · 반복 ================= */
 let active=1;
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
-  const n=+t.dataset.tab;if(n===active)return;active=n;
-  document.querySelectorAll('.tab').forEach(x=>{const on=x===t;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);});
+function setTab(n){
+  if(n===active)return;active=n;
+  document.querySelectorAll('.tab').forEach(x=>{const on=+x.dataset.tab===n;x.classList.toggle('active',on);x.setAttribute('aria-selected',on);});
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel'+n));
   if(n===1)S1.enter();if(n!==2)S2.release();
-}));
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setTab(+t.dataset.tab)));
+// 제목을 누르면 처음 화면으로: 1탭 · 1단계 (2탭에서 만든 우박·최고 기록, 3탭의 계절·온도 설정과 표는 그대로 둠)
+function goHome(){
+  if(active!==1)setTab(1);
+  S1.home();
+  scrollTo(0,0);document.body.scrollTop=0;   // 좁은 화면에서 스크롤한 경우 맨 위로
+}
+$('#homeLink').addEventListener('click',e=>{e.preventDefault();goHome();});
 document.addEventListener('keydown',e=>{
   if(e.target&&(e.target.tagName==='INPUT'))return;
   if(active===1&&(e.key==='ArrowRight'||e.key==='ArrowLeft'))S1.key(e.key);
