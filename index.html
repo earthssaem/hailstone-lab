@@ -183,14 +183,15 @@ footer .hub:hover{color:var(--ink);text-decoration-color:currentColor}
 <header class="top">
   <a class="brand" id="homeLink" href="#" title="처음 화면으로" aria-label="우박 탐구실 — 처음 화면으로"><h1>우박 탐구실</h1><span class="sub">적란운 속 얼음 알갱이는 어떻게 우박이 될까?</span></a>
 </header>
+<!-- 탭 버튼 id 는 tabbtn1~3: 주소의 #tab3 과 같은 id 가 있으면 열 때 브라우저가 그 요소까지 스크롤해 폰에서 제목 줄이 가려지므로 다르게 둠 -->
 <nav class="tabs" role="tablist" aria-label="활동 고르기">
-  <button class="tab active" data-tab="1" role="tab" id="tab1" aria-selected="true" aria-controls="panel1"><span class="num">1</span><span class="long">우박이 생기는 과정</span><span class="short">생기는 과정</span></button>
-  <button class="tab" data-tab="2" role="tab" id="tab2" aria-selected="false" aria-controls="panel2"><span class="num">2</span><span class="long">우박 만들기 체험</span><span class="short">우박 만들기</span></button>
-  <button class="tab" data-tab="3" role="tab" id="tab3" aria-selected="false" aria-controls="panel3"><span class="num">3</span><span class="long">우박이 잘 내리는 계절</span><span class="short">계절 비교</span></button>
+  <button class="tab active" data-tab="1" role="tab" id="tabbtn1" aria-selected="true" aria-controls="panel1"><span class="num">1</span><span class="long">우박이 생기는 과정</span><span class="short">생기는 과정</span></button>
+  <button class="tab" data-tab="2" role="tab" id="tabbtn2" aria-selected="false" aria-controls="panel2"><span class="num">2</span><span class="long">우박 만들기 체험</span><span class="short">우박 만들기</span></button>
+  <button class="tab" data-tab="3" role="tab" id="tabbtn3" aria-selected="false" aria-controls="panel3"><span class="num">3</span><span class="long">우박이 잘 내리는 계절</span><span class="short">계절 비교</span></button>
 </nav>
 <main class="wrap">
   <!-- 1. 단계별 애니메이션 -->
-  <section class="panel active" id="panel1" role="tabpanel" aria-labelledby="tab1">
+  <section class="panel active" id="panel1" role="tabpanel" aria-labelledby="tabbtn1">
     <div class="stage">
       <div class="stage-wrap">
         <svg id="s1svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid meet" role="img" aria-label="적란운 속에서 우박이 생기는 과정"></svg>
@@ -209,7 +210,7 @@ footer .hub:hover{color:var(--ink);text-decoration-color:currentColor}
   </section>
 
   <!-- 2. 우박 만들기 체험 -->
-  <section class="panel" id="panel2" role="tabpanel" aria-labelledby="tab2">
+  <section class="panel" id="panel2" role="tabpanel" aria-labelledby="tabbtn2">
     <div class="split">
       <div class="stage" id="stage2">
         <div class="stage-wrap">
@@ -258,7 +259,7 @@ footer .hub:hover{color:var(--ink);text-decoration-color:currentColor}
   </section>
 
   <!-- 3. 계절 비교 -->
-  <section class="panel" id="panel3" role="tabpanel" aria-labelledby="tab3">
+  <section class="panel" id="panel3" role="tabpanel" aria-labelledby="tabbtn3">
     <div class="split">
       <div class="stage">
         <div class="stage-wrap">
